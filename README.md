@@ -9,6 +9,9 @@
 |[![Circle CI](https://circleci.com/gh/springfox/springfox/tree/master.svg?style=svg)](https://circleci.com/gh/springfox/springfox/tree/master)|[![Coverage Status](https://coveralls.io/repos/springfox/springfox/badge.svg)](https://coveralls.io/r/springfox/springfox) |
 
 ### About
+
+https://phxxdev.atlassian.net/wiki/display/~jon/JSAPI+-+knetikSwagger+guide
+
 For more information on this project visit the [Springfox Website] (http://springfox.io) or
  [http://springfox.github.io/springfox/](http://springfox.github.io/springfox/)
 
