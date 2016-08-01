@@ -66,6 +66,10 @@ task customizeSwaggerUi << {
     from("${projectDir}/src/web/fonts")
     into("${buildDir}/${swaggerUiExplodedDir}/fonts")
   }
+  copy {
+  	from("${projectDir}/src/web/images/knetik-logo.png")
+    into("${buildDir}/${swaggerUiExplodedDir}/images")
+  }
   delete "${buildDir}/${swaggerUiExplodedDir}/index.html"
   delete "${buildDir}/${swaggerUiExplodedDir}/swagger-ui.js"
 }

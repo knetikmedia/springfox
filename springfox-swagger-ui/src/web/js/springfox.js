@@ -38,6 +38,10 @@ $(function() {
 							return _.first(permission.OAuth2);
 
 						}).join(',');
+						
+						if(security.length < 1) {
+							security = 'None';
+						}
 
 						var methodDivContainer = $('div[id=' + elementId+']'); //Locate our container to add our security content.
 
