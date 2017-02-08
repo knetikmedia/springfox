@@ -9,18 +9,18 @@
 	<description>Knetik Springfox Swagger fork</description>
 	<distributionManagement>
 		<snapshotRepository>
-			<id>repo.swagger.knetik.com</id>
-			<url>s3://repo.swagger.knetik.com/snapshot</url>
+			<id>knetik-maven-repo-snapshot</id>
+			<url>s3://knetik-maven-repository/snapshot</url>
 		</snapshotRepository>
 		<repository>
-			<id>repo.swagger.knetik.com</id>
-			<url>s3://repo.swagger.knetik.com/release</url>
+			<id>knetik-maven-repo-release</id>
+			<url>s3://knetik-maven-repository/release</url>
 		</repository>
 	</distributionManagement>
 	<repositories>
 		<repository>
-			<id>repo.swagger.knetik.com</id>
-			<url>s3://repo.swagger.knetik.com/release</url>
+			<id>knetik-maven-repo-release</id>
+			<url>s3://knetik-maven-repository/release</url>
 		</repository>
 	</repositories>
 	<build>

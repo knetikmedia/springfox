@@ -139,6 +139,7 @@ class SwaggerApiDocumentationScannerSpec extends DocumentationContextSpec {
       1 * listingReferenceScanner.scan(_) >> new ApiListingReferenceScanResult([resourceGroup: [requestMappingContext]])
   }
 
+
   def "Should sort based on position"() {
     given:
       def defaults = new Defaults()
@@ -178,6 +179,7 @@ class SwaggerApiDocumentationScannerSpec extends DocumentationContextSpec {
       1     | '/a' | 0
       2     | '/c' | 0
   }
+ 
 
   def apiListing(Defaults defaults, int position, String path) {
     new ApiListingBuilder(defaults.apiDescriptionOrdering())
