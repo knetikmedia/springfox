@@ -35,7 +35,7 @@ $(function() {
 
 						var security = _.map(method.security, function (permission) { //Grab all of the permissions and convert to a string.
 
-							return _.first(permission.OAuth2);
+							return _.first(permission.knetik_oauth);
 
 						}).join(',');
 						
