@@ -1,15 +1,7 @@
 {
   "apiVersion": "1.0",
-  "swaggerVersion": "1.2",
-  "basePath": "/",
-  "resourcePath": "/features",
-  "produces": [
-  ],
-  "consumes": [
-  ],
   "apis": [
     {
-      "path": "/features",
       "description": "all",
       "operations": [
         {
@@ -284,10 +276,370 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/features"
     },
     {
-      "path": "/features/allMethodsAllowed",
+      "description": "findIdentityById",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "findIdentityById",
+          "nickname": "findIdentityByIdUsingGET",
+          "produces": [
+            "application/vnd.com.fancy-pet+json",
+            "application/vnd.com.pet+json"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "itemId",
+              "name": "itemId",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK",
+              "responseModel": "Pet"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "Pet"
+        }
+      ],
+      "path": "/features/1367/{itemId}"
+    },
+    {
+      "description": "base64EncodedBody",
+      "operations": [
+        {
+          "method": "POST",
+          "summary": "base64EncodedBody",
+          "nickname": "base64EncodedBodyUsingPOST",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": true,
+              "description": "base64Encoded",
+              "name": "body",
+              "paramType": "body",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/1430-body"
+    },
+    {
+      "description": "proper",
+      "operations": [
+        {
+          "method": "POST",
+          "summary": "proper",
+          "nickname": "properUsingPOST",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": true,
+              "description": "base64Encoded",
+              "name": "base64Encoded",
+              "paramType": "query",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/1430-query"
+    },
+    {
+      "description": "serializablePetEntity",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "serializablePetEntity",
+          "nickname": "serializablePetEntityUsingGET",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "itemId",
+              "name": "itemId",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK",
+              "responseModel": "Pet"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "Pet"
+        }
+      ],
+      "path": "/features/1490/entity/{itemId}"
+    },
+    {
+      "description": "serializablePet",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "serializablePet",
+          "nickname": "serializablePetUsingGET",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "itemId",
+              "name": "itemId",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK",
+              "responseModel": "Pet"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "Pet"
+        }
+      ],
+      "path": "/features/1490/{itemId}"
+    },
+    {
+      "description": "updateSerializablePet",
+      "operations": [
+        {
+          "method": "PUT",
+          "summary": "updateSerializablePet",
+          "nickname": "updateSerializablePetUsingPUT",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "itemId",
+              "name": "itemId",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "allowMultiple": false,
+              "description": "pet",
+              "name": "body",
+              "paramType": "body",
+              "type": "Pet",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/1490/{itemId}"
+    },
+    {
+      "description": "addFiles",
+      "operations": [
+        {
+          "method": "POST",
+          "summary": "Add a new contact with file attachment",
+          "nickname": "addFilesUsingPOST",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": true,
+              "description": "files",
+              "name": "files",
+              "paramType": "form",
+              "items": {
+                "type": "File"
+              },
+              "type": "array",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/addFiles"
+    },
+    {
       "description": "allMethodAllowed",
       "operations": [
         {
@@ -554,15 +906,16 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/features/allMethodsAllowed"
     },
     {
-      "description": "addFiles",
+      "description": "getBare",
       "operations": [
         {
           "method": "POST",
-          "summary": "Add a new contact with file attachment",
-          "nickname": "addFilesUsingPOST",
+          "summary": "getBare",
+          "nickname": "getBareUsingPOST",
           "produces": [
             "*/*"
           ],
@@ -571,14 +924,107 @@
           ],
           "parameters": [
             {
-              "allowMultiple": true,
-              "description": "files",
-              "name": "files",
-              "paramType": "form",
+              "allowMultiple": false,
+              "name": "nestedType.name",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "defaultValue": "",
+              "description": "description of allCapsSet",
+              "name": "allCapsSet",
+              "paramAccess": "",
+              "paramType": "query",
               "items": {
-                "type": "File"
+                "type": "string"
               },
               "type": "array",
+              "uniqueItems": true,
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "name": "parentBeanProperty",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "enum": [
+                "man",
+                "chu"
+              ],
+              "defaultValue": "",
+              "description": "description of foo",
+              "name": "foo",
+              "paramAccess": "",
+              "paramType": "query",
+              "type": "string",
+              "required": true
+            },
+            {
+              "allowMultiple": false,
+              "description": "description of bar",
+              "name": "bar",
+              "paramAccess": "",
+              "paramType": "query",
+              "format": "int32",
+              "type": "integer",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "enum": [
+                "ONE",
+                "TWO"
+              ],
+              "name": "enumType",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "description": "A read only string",
+              "name": "readOnlyString",
+              "paramAccess": "",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "enum": [
+                "ONE",
+                "TWO"
+              ],
+              "defaultValue": "",
+              "description": "description of annotatedEnumType",
+              "name": "annotatedEnumType",
+              "paramAccess": "",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "name": "propertyWithNoSetterMethod",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "defaultValue": "",
+              "description": "local date time desc dd-MM-yyyy hh:mm:ss",
+              "name": "localDateTime",
+              "paramAccess": "",
+              "paramType": "query",
+              "format": "date-time",
+              "type": "string",
               "required": true
             }
           ],
@@ -608,61 +1054,9 @@
           "type": "void"
         }
       ],
-      "path": "/features/addFiles"
+      "path": "/features/bare"
     },
     {
-      "path": "/features/bare",
-      "description": "getBare",
-      "operations": [
-        {
-          "method": "POST",
-          "summary": "getBare",
-          "nickname": "getBareUsingPOST",
-          "produces": [
-            "*/*"
-          ],
-          "consumes": [
-            "application/json"
-          ],
-          "parameters": [
-            {
-              "allowMultiple": false,
-              "description": "example",
-              "name": "body",
-              "paramType": "body",
-              "type": "Example",
-              "required": false
-            }
-          ],
-          "responseMessages": [
-            {
-              "code": 200,
-              "message": "OK"
-            },
-            {
-              "code": 201,
-              "message": "Created"
-            },
-            {
-              "code": 401,
-              "message": "Unauthorized"
-            },
-            {
-              "code": 403,
-              "message": "Forbidden"
-            },
-            {
-              "code": 404,
-              "message": "Not Found"
-            }
-          ],
-          "deprecated": "false",
-          "type": "void"
-        }
-      ]
-    },
-    {
-      "path": "/features/bigDecimal",
       "description": "updateBigDecimal",
       "operations": [
         {
@@ -679,9 +1073,8 @@
             {
               "allowMultiple": false,
               "description": "input",
-              "name": "body",
-              "paramType": "body",
-              "format": "double",
+              "name": "input",
+              "paramType": "query",
               "type": "number",
               "required": false
             }
@@ -711,7 +1104,8 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/features/bigDecimal"
     },
     {
       "description": "updateBoolean",
@@ -730,8 +1124,8 @@
             {
               "allowMultiple": false,
               "description": "input",
-              "name": "body",
-              "paramType": "body",
+              "name": "input",
+              "paramType": "query",
               "type": "boolean",
               "required": false
             }
@@ -765,7 +1159,6 @@
       "path": "/features/boolean"
     },
     {
-      "path": "/features/date",
       "description": "updateDate",
       "operations": [
         {
@@ -782,9 +1175,10 @@
             {
               "allowMultiple": false,
               "description": "localDate",
-              "name": "body",
-              "paramType": "body",
-              "type": "LocalDate",
+              "name": "localDate",
+              "paramType": "query",
+              "format": "date",
+              "type": "string",
               "required": false
             }
           ],
@@ -813,10 +1207,10 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/features/date"
     },
     {
-      "path": "/features/effective",
       "description": "getEffective",
       "operations": [
         {
@@ -852,10 +1246,10 @@
           "deprecated": "false",
           "type": "Example"
         }
-      ]
+      ],
+      "path": "/features/effective"
     },
     {
-      "path": "/features/effectives",
       "description": "getEffectives",
       "operations": [
         {
@@ -889,12 +1283,122 @@
             }
           ],
           "deprecated": "false",
-          "type": "array",
           "items": {
             "type": "Example"
-          }
+          },
+          "type": "array"
         }
-      ]
+      ],
+      "path": "/features/effectives"
+    },
+    {
+      "description": "updateListOfExamples",
+      "operations": [
+        {
+          "method": "PUT",
+          "summary": "updateListOfExamples",
+          "nickname": "updateListOfExamplesUsingPUT",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": true,
+              "description": "examples",
+              "name": "examples",
+              "paramType": "query",
+              "items": {
+                "type": "Example"
+              },
+              "type": "array",
+              "required": false
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/examples"
+    },
+    {
+      "description": "updateListOfIntegers",
+      "operations": [
+        {
+          "method": "PUT",
+          "summary": "updateListOfIntegers",
+          "nickname": "updateListOfIntegersUsingPUT",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": true,
+              "description": "integers",
+              "name": "integers",
+              "paramType": "query",
+              "items": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "type": "array",
+              "required": false
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK"
+            },
+            {
+              "code": 201,
+              "message": "Created"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "void"
+        }
+      ],
+      "path": "/features/integers"
     },
     {
       "description": "listOfMaps",
@@ -909,8 +1413,7 @@
           "consumes": [
             "application/json"
           ],
-          "parameters": [
-          ],
+          "parameters": [],
           "responseMessages": [
             {
               "code": 200,
@@ -931,7 +1434,7 @@
             }
           ],
           "deprecated": "false",
-          "type": "List[Map\u00abstring,string\u00bb]"
+          "type": "List[Map«string,string»]"
         }
       ],
       "path": "/features/listOfMaps"
@@ -949,8 +1452,7 @@
           "consumes": [
             "application/json"
           ],
-          "parameters": [
-          ],
+          "parameters": [],
           "responseMessages": [
             {
               "code": 200,
@@ -971,7 +1473,7 @@
             }
           ],
           "deprecated": "false",
-          "type": "List[Entry\u00abstring,Map\u00abstring,Example\u00bb\u00bb]"
+          "type": "List[Entry«string,Map«string,Example»»]"
         }
       ],
       "path": "/features/mapOfMapOfExample"
@@ -989,8 +1491,7 @@
           "consumes": [
             "application/json"
           ],
-          "parameters": [
-          ],
+          "parameters": [],
           "responseMessages": [
             {
               "code": 200,
@@ -1038,21 +1539,6 @@
               "required": false
             },
             {
-              "allowMultiple": false,
-              "name": "stringProp",
-              "paramType": "query",
-              "type": "string",
-              "required": false
-            },
-            {
-              "allowMultiple": false,
-              "name": "intProp",
-              "paramType": "query",
-              "format": "int32",
-              "type": "integer",
-              "required": false
-            },
-            {
               "allowMultiple": true,
               "name": "listProp",
               "paramType": "query",
@@ -1067,10 +1553,35 @@
               "name": "arrayProp",
               "paramType": "query",
               "items": {
-                "type": "integer",
-                "format": "int32"
+                "format": "int32",
+                "type": "integer"
               },
               "type": "array",
+              "required": false
+            },
+            {
+              "allowMultiple": true,
+              "name": "accountTypes",
+              "paramType": "query",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "name": "stringProp",
+              "paramType": "query",
+              "type": "string",
+              "required": false
+            },
+            {
+              "allowMultiple": false,
+              "name": "intProp",
+              "paramType": "query",
+              "format": "int32",
+              "type": "integer",
               "required": false
             }
           ],
@@ -1150,7 +1661,6 @@
       "path": "/features/propertyWithObjectNode"
     },
     {
-      "path": "/features/status",
       "description": "updateBaz",
       "operations": [
         {
@@ -1171,8 +1681,8 @@
                 "TWO"
               ],
               "description": "enumType",
-              "name": "body",
-              "paramType": "body",
+              "name": "enumType",
+              "paramType": "query",
               "type": "string",
               "required": false
             }
@@ -1202,10 +1712,10 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/features/status"
     },
     {
-      "path": "/features/statuses",
       "description": "updateBazes",
       "operations": [
         {
@@ -1221,10 +1731,17 @@
           "parameters": [
             {
               "allowMultiple": true,
+              "enum": [
+                "ONE",
+                "TWO"
+              ],
               "description": "enumType",
-              "name": "body",
-              "paramType": "body",
-              "type": "Collection\u00abstring\u00bb",
+              "name": "enumType",
+              "paramType": "query",
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
               "required": false
             }
           ],
@@ -1253,10 +1770,10 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/features/statuses"
     },
     {
-      "path": "/features/{petId}",
       "description": "getPetById",
       "operations": [
         {
@@ -1304,177 +1821,29 @@
           "deprecated": "false",
           "type": "Pet"
         }
-      ]
+      ],
+      "path": "/features/{petId}"
     }
   ],
+  "basePath": "/",
+  "consumes": [],
   "models": {
-    "Chronology": {
+    "Pet": {
       "description": "",
-      "id": "Chronology",
+      "id": "Pet",
       "properties": {
-        "zone": {
+        "age": {
           "required": false,
-          "type": "DateTimeZone"
-        }
-      }
-    },
-    "DateTimeField": {
-      "description": "",
-      "id": "DateTimeField",
-      "properties": {
-        "durationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "leapDurationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "lenient": {
-          "required": false,
-          "type": "boolean"
-        },
-        "maximumValue": {
           "format": "int32",
-          "required": false,
           "type": "integer"
         },
-        "minimumValue": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
-        },
-        "rangeDurationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "supported": {
-          "required": false,
-          "type": "boolean"
-        },
-        "type": {
-          "required": false,
-          "type": "DateTimeFieldType"
-        }
-      }
-    },
-    "DateTimeFieldType": {
-      "description": "",
-      "id": "DateTimeFieldType",
-      "properties": {
-        "durationType": {
-          "required": false,
-          "type": "DurationFieldType"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
-        },
-        "rangeDurationType": {
-          "required": false,
-          "type": "DurationFieldType"
-        }
-      }
-    },
-    "DateTimeZone": {
-      "description": "",
-      "id": "DateTimeZone",
-      "properties": {
         "id": {
           "required": false,
           "type": "string"
         },
-        "fixed": {
-          "required": false,
-          "type": "boolean"
-        }
-      }
-    },
-    "ModelWithMapProperty": {
-      "description": "Describes model with map property",
-      "id": "ModelWithMapProperty",
-      "properties": {
-        "params": {
-          "description": "Map of params to be sent",
-          "required": false,
-          "type": "object"
-        }
-      }
-    },
-    "DurationField": {
-      "description": "",
-      "id": "DurationField",
-      "properties": {
         "name": {
           "required": false,
           "type": "string"
-        },
-        "precise": {
-          "required": false,
-          "type": "boolean"
-        },
-        "supported": {
-          "required": false,
-          "type": "boolean"
-        },
-        "type": {
-          "required": false,
-          "type": "DurationFieldType"
-        },
-        "unitMillis": {
-          "format": "int64",
-          "required": false,
-          "type": "integer"
-        }
-      }
-    },
-    "DurationFieldType": {
-      "description": "",
-      "id": "DurationFieldType",
-      "properties": {
-        "name": {
-          "required": false,
-          "type": "string"
-        }
-      }
-    },
-    "Entry\u00abstring,Map\u00abstring,Example\u00bb\u00bb": {
-      "description": "",
-      "id": "Entry\u00abstring,Map\u00abstring,Example\u00bb\u00bb",
-      "properties": {
-        "key": {
-          "required": false,
-          "type": "List[Entry\u00abstring,Example\u00bb]"
-        }
-      }
-    },
-    "ObjectNode": {
-      "description": "",
-      "id": "ObjectNode",
-      "properties": {
-      }
-    },
-    "Entry\u00abstring,Example\u00bb": {
-      "description": "",
-      "id": "Entry\u00abstring,Example\u00bb",
-      "properties": {
-        "key": {
-          "required": false,
-          "type": "Example"
-        }
-      }
-    },
-    "ModelWithObjectNode": {
-      "description": "",
-      "id": "ModelWithObjectNode",
-      "properties": {
-        "anyObject": {
-          "required": false,
-          "type": "ObjectNode"
         }
       }
     },
@@ -1483,10 +1852,10 @@
       "id": "Example",
       "properties": {
         "allCapsSet": {
+          "required": false,
           "items": {
             "type": "string"
           },
-          "required": false,
           "type": "array",
           "uniqueItems": true
         },
@@ -1500,8 +1869,8 @@
         },
         "bar": {
           "description": "description of bar",
-          "format": "int32",
           "required": false,
+          "format": "int32",
           "type": "integer"
         },
         "enumType": {
@@ -1518,7 +1887,8 @@
         },
         "localDateTime": {
           "required": false,
-          "type": "LocalDateTime"
+          "format": "date-time",
+          "type": "string"
         },
         "nestedType": {
           "required": false,
@@ -1528,11 +1898,11 @@
           "required": false,
           "type": "string"
         },
-        "propertyWithNoSetterMethod": {
+        "propertyWithNoGetterMethod": {
           "required": false,
           "type": "string"
         },
-        "propertyWithNoGetterMethod": {
+        "propertyWithNoSetterMethod": {
           "required": false,
           "type": "string"
         },
@@ -1543,115 +1913,28 @@
         }
       }
     },
-    "LocalDateTime": {
+    "ObjectNode": {
       "description": "",
-      "id": "LocalDateTime",
+      "id": "ObjectNode",
+      "properties": {}
+    },
+    "Entry«string,Map«string,Example»»": {
+      "description": "",
+      "id": "Entry«string,Map«string,Example»»",
       "properties": {
-        "centuryOfEra": {
-          "format": "int32",
+        "key": {
           "required": false,
-          "type": "integer"
-        },
-        "chronology": {
+          "type": "List[Entry«string,Example»]"
+        }
+      }
+    },
+    "Entry«string,Example»": {
+      "description": "",
+      "id": "Entry«string,Example»",
+      "properties": {
+        "key": {
           "required": false,
-          "type": "Chronology"
-        },
-        "dayOfMonth": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "dayOfWeek": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "dayOfYear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "era": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "fields": {
-          "items": {
-            "type": "DateTimeField"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "fieldTypes": {
-          "items": {
-            "type": "DateTimeFieldType"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "hourOfDay": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "millisOfDay": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "millisOfSecond": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "minuteOfHour": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "monthOfYear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "secondOfMinute": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "values": {
-          "items": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "weekOfWeekyear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "weekyear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "year": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "yearOfCentury": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "yearOfEra": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
+          "type": "Example"
         }
       }
     },
@@ -1665,24 +1948,29 @@
         }
       }
     },
-    "Pet": {
-      "description": "",
-      "id": "Pet",
+    "ModelWithMapProperty": {
+      "description": "Describes model with map property",
+      "id": "ModelWithMapProperty",
       "properties": {
-        "age": {
-          "format": "int32",
+        "params": {
+          "description": "Map of params to be sent",
           "required": false,
-          "type": "integer"
-        },
-        "id": {
+          "type": "object"
+        }
+      }
+    },
+    "ModelWithObjectNode": {
+      "description": "",
+      "id": "ModelWithObjectNode",
+      "properties": {
+        "anyObject": {
           "required": false,
-          "type": "string"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
+          "type": "ObjectNode"
         }
       }
     }
-  }
+  },
+  "produces": [],
+  "resourcePath": "/features",
+  "swaggerVersion": "1.2"
 }

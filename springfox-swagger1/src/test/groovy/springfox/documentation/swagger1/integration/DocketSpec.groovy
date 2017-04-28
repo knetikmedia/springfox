@@ -70,7 +70,12 @@ class DocketSpec extends DocumentationContextSpec {
   def "Swagger global response messages should override the default for a particular RequestMethod"() {
     when:
       plugin
-              .globalResponseMessage(GET, [new ResponseMessage(OK.value(), "blah", null, [] as Map)])
+              .globalResponseMessage(GET, [new ResponseMessage(
+          OK.value(),
+          "blah",
+          null,
+          [] as Map,
+          [])])
               .useDefaultResponseMessages(true)
               .configure(contextBuilder)
 
@@ -89,7 +94,12 @@ class DocketSpec extends DocumentationContextSpec {
   def "Swagger global response messages should not be used for a particular RequestMethod"() {
     when:
       new Docket(DocumentationType.SWAGGER_12)
-              .globalResponseMessage(GET, [new ResponseMessage(OK.value(), "blah", null, [] as Map)])
+              .globalResponseMessage(GET, [new ResponseMessage(
+          OK.value(),
+          "blah",
+          null,
+          [] as Map,
+          [])])
               .useDefaultResponseMessages(false)
               .configure(contextBuilder)
 
@@ -133,7 +143,7 @@ class DocketSpec extends DocumentationContextSpec {
       def swaggerDefault = new SwaggerDefaultConfiguration(new Defaults(), new TypeResolver(), Mock(ServletContext))
               .create(DocumentationType.SWAGGER_12)
       def isjdk8 = System.getProperty("java.version").startsWith("1.8")
-      def jdk8RuleCount = (isjdk8 ? 1 : 0)
+      def jdk8RuleCount = (isjdk8 ? 6 : 0)
     and:
       new Docket(DocumentationType.SWAGGER_12)
               ."${method}"(*args)
@@ -143,8 +153,8 @@ class DocketSpec extends DocumentationContextSpec {
 
     where:
       method                    | args                               | expectedSize
-      'genericModelSubstitutes' | [ResponseEntity.class, List.class] | 10
-      'directModelSubstitute'   | [LocalDate.class, Date.class]      | 9
+      'genericModelSubstitutes' | [ResponseEntity.class, List.class] | 17
+      'directModelSubstitute'   | [LocalDate.class, Date.class]      | 16
   }
 
   def "Basic property checks"() {

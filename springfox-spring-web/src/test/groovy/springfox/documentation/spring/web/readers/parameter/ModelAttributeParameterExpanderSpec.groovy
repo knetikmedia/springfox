@@ -1,8 +1,8 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  Licensed under the Apache License, Version 2.0 (the "License")
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
@@ -21,10 +21,12 @@ package springfox.documentation.spring.web.readers.parameter
 
 import com.fasterxml.classmate.TypeResolver
 import org.joda.time.LocalDateTime
-import springfox.documentation.service.Parameter
-import springfox.documentation.spring.web.dummy.models.ModelAttributeExample
-import springfox.documentation.spring.web.mixins.ServicePluginsSupport
+import springfox.documentation.schema.property.field.FieldProvider
 import springfox.documentation.spring.web.dummy.models.Example
+import springfox.documentation.spring.web.dummy.models.ModelAttributeComplexTypeExample
+import springfox.documentation.spring.web.dummy.models.ModelAttributeExample
+import springfox.documentation.spring.web.dummy.models.SomeType
+import springfox.documentation.spring.web.mixins.ServicePluginsSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
 
 import java.beans.BeanInfo
@@ -34,72 +36,111 @@ import static springfox.documentation.schema.AlternateTypeRules.*
 
 @Mixin([ServicePluginsSupport])
 class ModelAttributeParameterExpanderSpec extends DocumentationContextSpec {
-  List<Parameter> parameters = []
   TypeResolver typeResolver
   ModelAttributeParameterExpander sut
 
   def setup() {
     typeResolver = new TypeResolver()
     plugin.alternateTypeRules(newRule(typeResolver.resolve(LocalDateTime), typeResolver.resolve(String)))
-    sut = new ModelAttributeParameterExpander(typeResolver)
+    sut = new ModelAttributeParameterExpander(new FieldProvider(typeResolver))
     sut.pluginsManager = defaultWebPlugins()
   }
 
   def "should expand parameters"() {
     when:
-      sut.expand("", Example, parameters, context());
+    def parameters = sut.expand(new ExpansionContext("", typeResolver.resolve(Example), context()))
+
     then:
-      parameters.size() == 9
-      parameters.find { it.name == 'parentBeanProperty' }
-      parameters.find { it.name == 'foo' }
-      parameters.find { it.name == 'bar' }
-      parameters.find { it.name == 'enumType' }
-      parameters.find { it.name == 'annotatedEnumType' }
-      parameters.find { it.name == 'allCapsSet' }
-      parameters.find { it.name == 'nestedType.name' }
-      parameters.find { it.name == 'localDateTime' }
+    parameters.size() == 10
+    parameters.find { it.name == 'parentBeanProperty' }
+    parameters.find { it.name == 'foo' }
+    parameters.find { it.name == 'bar' }
+    parameters.find { it.name == 'readOnlyString' }
+    parameters.find { it.name == 'enumType' }
+    parameters.find { it.name == 'annotatedEnumType' }
+    parameters.find { it.name == 'propertyWithNoSetterMethod' }
+    parameters.find { it.name == 'allCapsSet' }
+    parameters.find { it.name == 'nestedType.name' }
+    parameters.find { it.name == 'localDateTime' }
   }
 
   def "should expand lists and nested types"() {
     when:
-      sut.expand("", ModelAttributeExample, parameters, context());
+    def parameters = sut.expand(new ExpansionContext("", typeResolver.resolve(ModelAttributeExample), context()))
+
     then:
-      parameters.size() == 5
-      parameters.find { it.name == 'stringProp' }
-      parameters.find { it.name == 'intProp' }
-      parameters.find { it.name == 'listProp' }
-      parameters.find { it.name == 'arrayProp' }
-      parameters.find { it.name == 'complexProp.name' }
+    parameters.size() == 6
+    parameters.find { it.name == 'stringProp' }
+    parameters.find { it.name == 'intProp' }
+    parameters.find { it.name == 'listProp' }
+    parameters.find { it.name == 'arrayProp' }
+    parameters.find { it.name == 'complexProp.name' }
+    parameters.find { it.name == 'accountTypes' }
+  }
+
+  def "should expand complex types"() {
+    when:
+    def parameters = sut.expand(new ExpansionContext("", typeResolver.resolve(ModelAttributeComplexTypeExample), context()))
+
+    then:
+    parameters.size() == 12
+    parameters.find { it.name == 'stringProp' }
+    parameters.find { it.name == 'intProp' }
+    parameters.find { it.name == 'listProp' }
+    parameters.find { it.name == 'arrayProp' }
+    parameters.find { it.name == 'complexProp.name' }
+    parameters.find { it.name == 'fancyPets[0].categories[0].name' }
+    parameters.find { it.name == 'fancyPets[0].id' }
+    parameters.find { it.name == 'fancyPets[0].name' }
+    parameters.find { it.name == 'fancyPets[0].age' }
+    parameters.find { it.name == 'categories[0].name' }
+    parameters.find { it.name == 'modelAttributeProperty' }
+    parameters.find { it.name == 'accountTypes' }
   }
 
   def "should expand parameters when parent name is not empty"() {
     when:
-      sut.expand("parent", Example, parameters, context());
+    def parameters = sut.expand(new ExpansionContext("parent", typeResolver.resolve(Example), context()))
+
     then:
-      parameters.size() == 9
-      parameters.find { it.name == 'parent.parentBeanProperty' }
-      parameters.find { it.name == 'parent.foo' }
-      parameters.find { it.name == 'parent.bar' }
-      parameters.find { it.name == 'parent.enumType' }
-      parameters.find { it.name == 'parent.annotatedEnumType' }
-      parameters.find { it.name == 'parent.allCapsSet' }
-      parameters.find { it.name == 'parent.nestedType.name' }
-      parameters.find { it.name == 'parent.localDateTime' }
+    parameters.size() == 10
+    parameters.find { it.name == 'parent.parentBeanProperty' }
+    parameters.find { it.name == 'parent.foo' }
+    parameters.find { it.name == 'parent.bar' }
+    parameters.find { it.name == 'parent.enumType' }
+    parameters.find { it.name == 'parent.annotatedEnumType' }
+    parameters.find { it.name == 'parent.propertyWithNoSetterMethod' }
+    parameters.find { it.name == 'parent.allCapsSet' }
+    parameters.find { it.name == 'parent.nestedType.name' }
+    parameters.find { it.name == 'parent.localDateTime' }
+  }
+
+  def "should not expand causing stack overflow"() {
+    when:
+    def parameters = sut.expand(new ExpansionContext("parent", typeResolver.resolve(SomeType), context()))
+
+    then:
+    parameters.size() == 3
+    parameters.find { it.name == 'parent.string1' }
+    parameters.find { it.name == 'parent.otherType.string2' }
+    parameters.find { it.name == 'parent.otherType.parent.string1' }
   }
 
   def "Should return empty set when there is an exception"() {
     given:
-      ModelAttributeParameterExpander expander =
-              new ModelAttributeParameterExpander(typeResolver) {
-        @Override
-        def BeanInfo getBeanInfo(Class<?> clazz) throws IntrospectionException {
-          throw new IntrospectionException("Fail");
+    ModelAttributeParameterExpander expander =
+        new ModelAttributeParameterExpander(new FieldProvider(typeResolver)) {
+          @Override
+          def BeanInfo getBeanInfo(Class<?> clazz) throws IntrospectionException {
+            throw new IntrospectionException("Fail")
+          }
         }
-      }
-      expander.pluginsManager = defaultWebPlugins()
+    expander.pluginsManager = defaultWebPlugins()
+
     when:
-      expander.expand("", Example, parameters, context());
+    def parameters = expander.expand(new ExpansionContext("", typeResolver.resolve(Example), context()))
+
     then:
-      parameters.size() == 0;
+    parameters.size() == 0
   }
 }

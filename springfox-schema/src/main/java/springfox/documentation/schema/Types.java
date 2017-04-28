@@ -50,7 +50,9 @@ public class Types {
       "object",
       "long",
       "date-time",
-      "file");
+      "__file",
+      "biginteger",
+      "bigdecimal");
   private static final Map<Type, String> typeNameLookup = ImmutableMap.<Type, String>builder()
       .put(Long.TYPE, "long")
       .put(Short.TYPE, "int")
@@ -62,7 +64,7 @@ public class Types {
       .put(Character.TYPE, "string")
 
       .put(Date.class, "date-time")
-      .put(java.sql.Date.class, "date-time")
+      .put(java.sql.Date.class, "date")
       .put(String.class, "string")
       .put(Object.class, "object")
       .put(Long.class, "long")
@@ -72,11 +74,11 @@ public class Types {
       .put(Float.class, "float")
       .put(Boolean.class, "boolean")
       .put(Byte.class, "byte")
-      .put(BigDecimal.class, "double")
-      .put(BigInteger.class, "long")
+      .put(BigDecimal.class, "bigdecimal")
+      .put(BigInteger.class, "biginteger")
       .put(Currency.class, "string")
       .put(UUID.class, "string")
-      .put(MultipartFile.class, "file")
+      .put(MultipartFile.class, "__file")
       .build();
 
   public static String typeNameFor(Type type) {
@@ -85,6 +87,10 @@ public class Types {
 
   public static boolean isBaseType(String typeName) {
     return baseTypes.contains(typeName);
+  }
+
+  public static boolean isBaseType(ResolvedType type) {
+    return baseTypes.contains(typeNameFor(type.getErasedType()));
   }
 
   public static boolean isVoid(ResolvedType returnType) {

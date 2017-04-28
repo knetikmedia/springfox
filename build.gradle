@@ -1,23 +1,26 @@
-import springfox.gradlebuild.utils.ProjectDefinitions
-
-apply from: "$rootDir/gradle/dependencies.gradle"
-apply from: "$rootDir/gradle/ide.gradle"
-
 buildscript {
   repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
     jcenter()
   }
 
   dependencies {
     classpath "com.github.adrianbk:gradle-jvmsrc-plugin:0.6.1"
-    classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.3.1"
+    classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.1"
     classpath "com.github.adrianbk:gradle-travisci-trigger-plugin:1.0.0"
-    classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-    classpath "com.ofg:uptodate-gradle-plugin:1.6.2"
-    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+    classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.2'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
     classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.5.3"
+    classpath "org.ajoberstar:gradle-git:1.6.0"
   }
 }
+
+apply from: "$rootDir/gradle/dependencies.gradle"
+apply from: "$rootDir/gradle/ide.gradle"
+apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'build-dashboard'
 apply plugin: 'project-report'
 apply plugin: 'springfox-multi-release'
@@ -27,8 +30,11 @@ ext {
   jdkVersion = 1.6
 }
 
+allprojects {
+  apply plugin: 'jacoco'
+}
+
 subprojects {
-  apply plugin: "com.ofg.uptodate"
   //Not strictly groovy projects but useful for the IDE to recognise groovy test sources
   apply plugin: 'groovy' //gradle groovy plugin extends the java plugin
   apply plugin: 'com.github.adrianbk.jvmsrc'
@@ -40,8 +46,7 @@ subprojects {
   //Commented PMD and Findbugs as its taking too much time for very little value
   //Perhaps run every 20 CI builds (mod of ci build number)
 //  apply from: "$rootDir/gradle/code-quality.gradle"
-  if (ProjectDefinitions.publishable(it)) {
-    apply from: "$rootDir/gradle/coverage.gradle"
+  if (springfox.gradlebuild.utils.ProjectDefinitions.publishable(it)) {
     apply from: "$rootDir/gradle/publishing.gradle"
   }
   repositories {
@@ -87,11 +92,44 @@ subprojects {
       )
     }
   }
+  task allDeps(type: DependencyReportTask) {}
 
+  jacocoTestReport {
+    reports {
+      xml.enabled true
+      html.enabled true
+    }
+  }
+
+  test {
+    jvmArgs "-Dorg.spockframework.mock.ignoreByteBuddy=true"
+  }
 }
 
 apply from: "$rootDir/gradle/documentation.gradle"
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '2.13'
+  gradleVersion = '3.1'
+}
+
+task codeCoverageReport(type: JacocoReport) {
+
+  // Gather execution data from all subprojects
+  // (change this if you e.g. want to calculate unit test/integration test coverage separately)
+  executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+  // Add all relevant sourcesets from the subprojects
+  subprojects.each { sourceSets it.sourceSets.main }
+
+  reports {
+    xml.enabled true
+    xml.destination "${buildDir}/reports/jacoco/report.xml"
+    html.enabled false
+    csv.enabled false
+  }
+}
+
+// always run the tests before generating the report
+codeCoverageReport.dependsOn {
+  subprojects*.test
 }

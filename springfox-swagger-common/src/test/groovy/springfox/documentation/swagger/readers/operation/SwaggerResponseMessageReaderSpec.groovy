@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2016 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,13 +22,12 @@ package springfox.documentation.swagger.readers.operation
 import com.fasterxml.classmate.TypeResolver
 import org.springframework.plugin.core.OrderAwarePluginRegistry
 import org.springframework.plugin.core.PluginRegistry
-import org.springframework.web.bind.annotation.RequestMethod
 import spock.lang.Unroll
-import springfox.documentation.builders.OperationBuilder
 import springfox.documentation.schema.DefaultTypeNameProvider
 import springfox.documentation.schema.ModelRef
 import springfox.documentation.schema.ModelReference
 import springfox.documentation.schema.TypeNameExtractor
+import springfox.documentation.service.Header
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.schema.TypeNameProviderPlugin
 import springfox.documentation.spi.service.contexts.OperationContext
@@ -36,22 +35,14 @@ import springfox.documentation.spring.web.dummy.ResponseHeaderTestController
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
 import springfox.documentation.spring.web.mixins.ServicePluginsSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
-import springfox.documentation.spring.web.readers.operation.CachingOperationNameGenerator
 
 @Mixin([RequestMappingSupport, ServicePluginsSupport])
 class SwaggerResponseMessageReaderSpec extends DocumentationContextSpec {
 
   def "ApiResponse annotation should override when using swagger reader"() {
     given:
-      OperationContext operationContext = new OperationContext(
-          new OperationBuilder(
-              new CachingOperationNameGenerator()),
-              RequestMethod.GET,
-              dummyHandlerMethod('methodWithApiResponses'),
-              0,
-              requestMappingInfo('/somePath'),
-              context(),
-              "")
+      OperationContext operationContext =
+        operationContext(context(), dummyHandlerMethod('methodWithApiResponses'))
 
       PluginRegistry<TypeNameProviderPlugin, DocumentationType> modelNameRegistry =
         OrderAwarePluginRegistry.create([new DefaultTypeNameProvider()])
@@ -67,22 +58,19 @@ class SwaggerResponseMessageReaderSpec extends DocumentationContextSpec {
       def responseMessages = operation.responseMessages
 
     then:
-      responseMessages.size() == 1
+      responseMessages.size() == 2
       def annotatedResponse = responseMessages.find { it.code == 413 }
       annotatedResponse != null
       annotatedResponse.message == "a message"
+      def classLevelResponse = responseMessages.find { it.code == 404 }
+      classLevelResponse != null
+      classLevelResponse.message == "Not Found"
   }
 
   def "ApiOperation annotation should provide response"() {
     given:
-      OperationContext operationContext = new OperationContext(
-          new OperationBuilder(new CachingOperationNameGenerator()),
-          RequestMethod.GET,
-          dummyHandlerMethod('methodApiResponseClass'),
-          0,
-          requestMappingInfo('/somePath'),
-          context(),
-          "")
+      OperationContext operationContext =
+        operationContext(context(), dummyHandlerMethod('methodApiResponseClass'))
 
       PluginRegistry<TypeNameProviderPlugin, DocumentationType> modelNameRegistry =
           OrderAwarePluginRegistry.create([new DefaultTypeNameProvider()])
@@ -98,23 +86,20 @@ class SwaggerResponseMessageReaderSpec extends DocumentationContextSpec {
       def responseMessages = operation.responseMessages
 
     then:
-      responseMessages.size() == 1
+      responseMessages.size() == 2
       def annotatedResponse = responseMessages.find { it.code == 200 }
       annotatedResponse != null
       annotatedResponse.message == "OK"
+      def classLevelResponse = responseMessages.find { it.code == 404 }
+      classLevelResponse != null
+      classLevelResponse.message == "Not Found"
   }
 
   @Unroll
   def "ApiOperation#responseHeaders and ApiResponse#responseHeader are merged for method #methodName"() {
     given:
-      OperationContext operationContext = new OperationContext(
-          new OperationBuilder(new CachingOperationNameGenerator()),
-          RequestMethod.GET,
-          handlerMethodIn(ResponseHeaderTestController, methodName),
-          0,
-          requestMappingInfo('/somePath'),
-          context(),
-          "")
+      OperationContext operationContext =
+        operationContext(context(), handlerMethodIn(ResponseHeaderTestController, methodName))
 
       PluginRegistry<TypeNameProviderPlugin, DocumentationType> modelNameRegistry =
           OrderAwarePluginRegistry.create([new DefaultTypeNameProvider()])
@@ -145,16 +130,16 @@ class SwaggerResponseMessageReaderSpec extends DocumentationContextSpec {
       "operationHeadersOnly"    | [["name": "header1", "type": new ModelRef("List", new ModelRef("string"))]]
       "responseHeadersOnly"     | [["name": "header1", "type": new ModelRef("string")]]
       "bothWithOverride"        | [["name": "header1", "type": new ModelRef("int")]]
-      "bothWithoutOverride"     | [["name": "header2", "type": new ModelRef("int")],["name": "header1", "type": new ModelRef("string")]]
+      "bothWithoutOverride"     | [["name": "header1", "type": new ModelRef("string")],["name": "header2", "type": new ModelRef("int")]]
   }
 
-  boolean headersMatch(Map<String, ModelReference> headers, def expectedHeaders) {
+  boolean headersMatch(Map<String, ModelReference> headers, List<Header> expectedHeaders) {
     if (headers.size() == expectedHeaders.size()) {
       def retValue = true
       headers.eachWithIndex { Map.Entry<String, ModelReference> entry, int i ->
         if (entry.key != expectedHeaders.get(i).name ||
-            entry.value.type != expectedHeaders.get(i).type.type ||
-            entry.value.itemType != expectedHeaders.get(i).type.itemType) {
+            entry.value.modelReference.type != expectedHeaders.get(i).type.type ||
+            entry.value.modelReference.itemType != expectedHeaders.get(i).type.itemType) {
           retValue &= false
         }
       }
@@ -168,6 +153,11 @@ class SwaggerResponseMessageReaderSpec extends DocumentationContextSpec {
       SwaggerResponseMessageReader.isSuccessful(status)
     where:
       status << [200, 204]
+  }
+
+  def "Unknown integers are treated as failures" () {
+    expect:
+      !SwaggerResponseMessageReader.isSuccessful(1001)
   }
 
   def "Supports all documentation types"() {

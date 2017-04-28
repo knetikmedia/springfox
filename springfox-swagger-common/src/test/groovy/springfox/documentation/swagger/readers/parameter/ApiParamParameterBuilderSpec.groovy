@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@
 
 package springfox.documentation.swagger.readers.parameter
 
-import com.google.common.base.Optional
+import com.fasterxml.classmate.ResolvedType
+import com.fasterxml.classmate.TypeResolver
 import io.swagger.annotations.ApiParam
 import org.springframework.core.MethodParameter
+import org.springframework.mock.env.MockEnvironment
 import spock.lang.Unroll
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
@@ -31,6 +33,7 @@ import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.dummy.DummyClass
 import springfox.documentation.spring.web.mixins.ModelProviderForServiceSupport
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
@@ -42,11 +45,15 @@ class ApiParamParameterBuilderSpec extends DocumentationContextSpec implements A
   def "enum types"() {
     given:
       MethodParameter methodParameter = new MethodParameter(handlerMethod.getMethod(), 0)
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def resolvedMethodParameter = new ResolvedMethodParameter("default", methodParameter,
+          new TypeResolver().resolve(handlerMethod.methodParameters[0].getParameterType()))
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
-      ParameterContext parameterContext = new ParameterContext(resolvedMethodParameter, new ParameterBuilder(),
-          context(), genericNamingStrategy, Mock(OperationContext))
+      ParameterContext parameterContext = new ParameterContext(
+          resolvedMethodParameter,
+          new ParameterBuilder(),
+          context(),
+          genericNamingStrategy,
+          Mock(OperationContext))
 
     when:
       ApiParamParameterBuilder operationCommand = new ApiParamParameterBuilder();
@@ -65,10 +72,7 @@ class ApiParamParameterBuilderSpec extends DocumentationContextSpec implements A
   @Unroll
   def "Api annotation with list type"() {
     given:
-      MethodParameter methodParameter = Mock(MethodParameter)
-      methodParameter.getParameterAnnotation(ApiParam) >> apiParamAnnotation
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def resolvedMethodParameter = new ResolvedMethodParameter(0, "", [apiParamAnnotation], stubbedResolvedType())
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
       ParameterContext parameterContext =
           new ParameterContext(
@@ -79,7 +83,7 @@ class ApiParamParameterBuilderSpec extends DocumentationContextSpec implements A
               Mock(OperationContext))
 
     when:
-      ApiParamParameterBuilder operationCommand = stubbedParamBuilder(apiParamAnnotation);
+      ApiParamParameterBuilder operationCommand = stubbedParamBuilder(apiParamAnnotation)
       operationCommand.apply(parameterContext)
       AllowableListValues allowableValues = parameterContext.parameterBuilder().build().allowableValues as AllowableListValues
     then:
@@ -96,13 +100,14 @@ class ApiParamParameterBuilderSpec extends DocumentationContextSpec implements A
   @Unroll("Range: #min | #max")
   def "Api annotation with ranges"() {
     given:
-      MethodParameter methodParameter = Stub(MethodParameter)
-      methodParameter.getParameterAnnotations() >> [apiParamAnnotation]
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def resolvedMethodParameter = new ResolvedMethodParameter(0, "", [apiParamAnnotation], stubbedResolvedType())
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
-      ParameterContext parameterContext = new ParameterContext(resolvedMethodParameter,
-          new ParameterBuilder(), context(), genericNamingStrategy, Mock(OperationContext))
+      ParameterContext parameterContext = new ParameterContext(
+          resolvedMethodParameter,
+          new ParameterBuilder(),
+          context(),
+          genericNamingStrategy,
+          Mock(OperationContext))
 
     when:
       ApiParamParameterBuilder operationCommand = stubbedParamBuilder(apiParamAnnotation);
@@ -128,11 +133,14 @@ class ApiParamParameterBuilderSpec extends DocumentationContextSpec implements A
   }
 
   def stubbedParamBuilder(ApiParam apiParamAnnotation) {
-    new ApiParamParameterBuilder() {
-      @Override
-      def Optional<ApiParam> findApiParam(MethodParameter methodParameter) {
-        Optional.fromNullable(apiParamAnnotation)
-      }
+    def descriptions = new DescriptionResolver(new MockEnvironment())
+    new ApiParamParameterBuilder(descriptions) {
     }
+  }
+
+  def stubbedResolvedType() {
+    def resolvedType = Mock(ResolvedType)
+    resolvedType.getErasedType() >> Object.class
+    return resolvedType
   }
 }

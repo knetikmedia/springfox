@@ -34,21 +34,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import springfox.documentation.spring.web.dummy.models.Business;
 import springfox.documentation.spring.web.dummy.models.EnumType;
 import springfox.documentation.spring.web.dummy.models.Example;
+import springfox.documentation.spring.web.dummy.models.FancyPet;
 import springfox.documentation.spring.web.dummy.models.ModelAttributeExample;
 import springfox.documentation.spring.web.dummy.models.ModelWithArrayOfArrays;
 import springfox.documentation.spring.web.dummy.models.ModelWithMapProperty;
 import springfox.documentation.spring.web.dummy.models.ModelWithObjectNode;
 import springfox.documentation.spring.web.dummy.models.NestedType;
 import springfox.documentation.spring.web.dummy.models.Pet;
+import springfox.documentation.spring.web.dummy.models.PetWithSerializer;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -108,9 +111,21 @@ public class FeatureDemonstrationService {
   }
 
 
-  //Generic ollection input
+  //Generic collection input
   @RequestMapping(value = "/statuses", method = RequestMethod.POST)
-  public void updateBazes(Collection<EnumType> enumType) {
+  public void updateBazes(List<EnumType> enumType) {
+    //No-op
+  }
+
+  //Generic collection input
+  @RequestMapping(value = "/integers", method = RequestMethod.PUT)
+  public void updateListOfIntegers(List<Integer> integers) {
+    //No-op
+  }
+
+  //Generic collection input
+  @RequestMapping(value = "/examples", method = RequestMethod.PUT)
+  public void updateListOfExamples(List<Example> examples) {
     //No-op
   }
 
@@ -148,6 +163,7 @@ public class FeatureDemonstrationService {
     throw new UnsupportedOperationException();
   }
 
+
   @RequestMapping(value = "mapOfMapOfExample", method = RequestMethod.GET)
   public Map<String, Map<String, Example>> mapOfMapOfExample() {
     throw new UnsupportedOperationException();
@@ -177,5 +193,41 @@ public class FeatureDemonstrationService {
   @RequestMapping(value = "/propertyWithObjectNode", method = RequestMethod.POST)
   public void propertyWithObjectNode(@RequestBody ModelWithObjectNode model) {
     //No-op
+  }
+
+  @RequestMapping(value = "/1430-body", method = RequestMethod.POST)
+  public void base64EncodedBody(@RequestBody byte[] base64Encoded) {
+    //No-op
+  }
+
+  @RequestMapping(value = "/1430-query", method = RequestMethod.POST)
+  public void proper(@RequestParam byte[] base64Encoded) {
+    //No-op
+  }
+
+  @RequestMapping(value = "/1367/{itemId}", method = RequestMethod.GET, produces = "application/vnd.com.pet+json")
+  public ResponseEntity<Pet> findIdentityById(@PathVariable String itemId) {
+    return new ResponseEntity<Pet>(new Pet(), HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/1367/{itemId}", method = RequestMethod.GET, produces = "application/vnd.com.fancy-pet+json")
+  public ResponseEntity<FancyPet> findById(@PathVariable String itemId) {
+    return new ResponseEntity<FancyPet>(new FancyPet(), HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/1490/entity/{itemId}", method = RequestMethod.GET)
+  @ResponseBody
+  public ResponseEntity<PetWithSerializer> serializablePetEntity(@PathVariable String itemId) {
+    return new ResponseEntity<PetWithSerializer>(new PetWithSerializer(), HttpStatus.OK);
+  }
+
+  @RequestMapping(value = "/1490/{itemId}", method = RequestMethod.GET)
+  @ResponseBody
+  public PetWithSerializer serializablePet(@PathVariable String itemId) {
+    return new PetWithSerializer();
+  }
+
+  @RequestMapping(value = "/1490/{itemId}", method = RequestMethod.PUT)
+  public void updateSerializablePet(@PathVariable String itemId, @RequestBody PetWithSerializer pet) {
   }
 }

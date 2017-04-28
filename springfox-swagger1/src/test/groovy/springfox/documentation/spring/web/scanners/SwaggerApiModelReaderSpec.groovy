@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2016 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import springfox.documentation.schema.Model
 import springfox.documentation.schema.ModelProperty
 import springfox.documentation.spi.service.contexts.Defaults
 import springfox.documentation.spi.service.contexts.RequestMappingContext
+import springfox.documentation.spring.web.WebMvcRequestHandler
 import springfox.documentation.spring.web.dummy.DummyModels
 import springfox.documentation.spring.web.dummy.controllers.BusinessService
 import springfox.documentation.spring.web.mixins.ModelProviderForServiceSupport
@@ -96,7 +97,11 @@ class SwaggerApiModelReaderSpec extends DocumentationContextSpec {
   }
 
   def context(HandlerMethod handlerMethod) {
-    return new RequestMappingContext(context(), requestMappingInfo('/somePath'), handlerMethod)
+    return new RequestMappingContext(
+        context(),
+        new WebMvcRequestHandler(
+            requestMappingInfo('/somePath'),
+            handlerMethod))
   }
 
   def "should only generate models for request parameters that are annotated with Springs RequestBody"() {
@@ -106,14 +111,19 @@ class SwaggerApiModelReaderSpec extends DocumentationContextSpec {
               HttpServletResponse.class,
               DummyModels.AnnotatedBusinessModel.class
       )
-      RequestMappingContext context = new RequestMappingContext(context(), requestMappingInfo('/somePath'),
-              handlerMethod)
+      RequestMappingContext context = new RequestMappingContext(
+          context(),
+          new WebMvcRequestHandler(
+              requestMappingInfo('/somePath'),
+              handlerMethod))
+
     when:
       def models = sut.read(context)
 
     then:
-      models.size() == 1 // instead of 3
+      models.size() == 2 // instead of 3
       models.containsKey("BusinessModel")
+      models.containsKey("RestError") // from class-level annotation.
 
   }
 
@@ -128,8 +138,11 @@ class SwaggerApiModelReaderSpec extends DocumentationContextSpec {
     and:
       HandlerMethod handlerMethod = handlerMethodIn(BusinessService, 'getResponseEntity', String)
       RequestMappingContext context =
-              new RequestMappingContext(pluginContext, requestMappingInfo('/businesses/responseEntity/{businessId}'),
-                      handlerMethod )
+              new RequestMappingContext(
+                  pluginContext,
+                  new WebMvcRequestHandler(
+                      requestMappingInfo('/businesses/responseEntity/{businessId}'),
+                      handlerMethod))
     when:
       def models = sut.read(context)
 
@@ -143,13 +156,18 @@ class SwaggerApiModelReaderSpec extends DocumentationContextSpec {
       HandlerMethod handlerMethod = dummyHandlerMethod('methodWithSameAnnotatedModelInReturnAndRequestBodyParam',
               DummyModels.AnnotatedBusinessModel
       )
-      RequestMappingContext context = new RequestMappingContext(context(), requestMappingInfo('/somePath'), handlerMethod)
+      RequestMappingContext context = new RequestMappingContext(
+          context(),
+          new WebMvcRequestHandler(
+              requestMappingInfo('/somePath'),
+              handlerMethod))
 
     when:
       def models = sut.read(context)
 
     then:
-      models.size() == 1
+      models.size() == 2
+      models.containsKey('RestError') // from class-level annotation.
 
       String modelName = DummyModels.AnnotatedBusinessModel.class.simpleName
       models.containsKey(modelName)

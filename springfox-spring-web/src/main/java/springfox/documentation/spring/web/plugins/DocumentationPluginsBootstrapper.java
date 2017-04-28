@@ -21,14 +21,18 @@ package springfox.documentation.spring.web.plugins;
 
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 import springfox.documentation.RequestHandler;
+import springfox.documentation.schema.AlternateTypeRule;
+import springfox.documentation.schema.AlternateTypeRuleConvention;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.DocumentationPlugin;
+import springfox.documentation.spi.service.RequestHandlerCombiner;
 import springfox.documentation.spi.service.RequestHandlerProvider;
 import springfox.documentation.spi.service.contexts.Defaults;
 import springfox.documentation.spi.service.contexts.DocumentationContext;
@@ -41,6 +45,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.collect.FluentIterable.*;
+import static springfox.documentation.builders.BuilderDefaults.*;
 import static springfox.documentation.spi.service.contexts.Orderings.*;
 
 /**
@@ -59,6 +64,11 @@ public class DocumentationPluginsBootstrapper implements SmartLifecycle {
   private final DefaultConfiguration defaultConfiguration;
 
   private AtomicBoolean initialized = new AtomicBoolean(false);
+
+  @Autowired(required = false)
+  private RequestHandlerCombiner combiner;
+  @Autowired(required = false)
+  private List<AlternateTypeRuleConvention> typeConventions;
 
   @Autowired
   public DocumentationPluginsBootstrapper(
@@ -85,14 +95,31 @@ public class DocumentationPluginsBootstrapper implements SmartLifecycle {
     scanned.addDocumentation(resourceListing.scan(context));
   }
 
-  private DocumentationContextBuilder defaultContextBuilder(DocumentationPlugin each) {
-    DocumentationType documentationType = each.getDocumentationType();
+  private DocumentationContextBuilder defaultContextBuilder(DocumentationPlugin plugin) {
+    DocumentationType documentationType = plugin.getDocumentationType();
     List<RequestHandler> requestHandlers = from(handlerProviders)
         .transformAndConcat(handlers())
         .toList();
+    List<AlternateTypeRule> rules = from(nullToEmptyList(typeConventions))
+          .transformAndConcat(toRules())
+          .toList();
     return documentationPluginsManager
         .createContextBuilder(documentationType, defaultConfiguration)
-        .requestHandlers(requestHandlers);
+        .rules(rules)
+        .requestHandlers(combiner().combine(requestHandlers));
+  }
+
+  private Function<AlternateTypeRuleConvention, List<AlternateTypeRule>> toRules() {
+    return new Function<AlternateTypeRuleConvention, List<AlternateTypeRule>>() {
+      @Override
+      public List<AlternateTypeRule> apply(AlternateTypeRuleConvention input) {
+        return input.rules();
+      }
+    };
+  }
+
+  private RequestHandlerCombiner combiner() {
+    return Optional.fromNullable(combiner).or(new DefaultRequestHandlerCombiner());
   }
 
   private Function<RequestHandlerProvider, ? extends Iterable<RequestHandler>> handlers() {

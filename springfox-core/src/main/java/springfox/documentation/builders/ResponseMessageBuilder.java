@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,10 +20,14 @@
 package springfox.documentation.builders;
 
 import springfox.documentation.schema.ModelReference;
+import springfox.documentation.service.Header;
 import springfox.documentation.service.ResponseMessage;
+import springfox.documentation.service.VendorExtension;
 
+import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.*;
 import static springfox.documentation.builders.BuilderDefaults.*;
 
@@ -31,7 +35,8 @@ public class ResponseMessageBuilder {
   private int code;
   private String message;
   private ModelReference responseModel;
-  private Map<String, ModelReference> headers = newHashMap();
+  private Map<String, Header> headers = newTreeMap();
+  private List<VendorExtension> vendorExtensions = newArrayList();
 
   /**
    * Updates the http response code
@@ -71,13 +76,50 @@ public class ResponseMessageBuilder {
    *
    * @param headers
    * @return this
+   * @deprecated Use the {@link ResponseMessageBuilder#headersWithDescription} instead
+   * @since 2.5.0
    */
+  @Deprecated
   public ResponseMessageBuilder headers(Map<String, ModelReference> headers) {
+    this.headers.putAll(transformEntries(nullToEmptyMap(headers), toHeaderEntry()));
+    return this;
+  }
+
+
+  private EntryTransformer<String, ModelReference, Header> toHeaderEntry() {
+    return new EntryTransformer<String, ModelReference, Header>() {
+      @Override
+      public Header transformEntry(String key, ModelReference value) {
+        return new Header(key, "", value);
+      }
+    };
+  }
+
+  /**
+   * Updates the response headers
+   *
+   * @param headers
+   * @return this
+   * @since 2.5.0
+   */
+  public ResponseMessageBuilder headersWithDescription(Map<String, Header> headers) {
     this.headers.putAll(nullToEmptyMap(headers));
     return this;
   }
 
+  /**
+   * Updates the response message extensions
+   *
+   * @param extensions - response message extensions
+   * @return this
+   * @since 2.5.0
+   */
+  public ResponseMessageBuilder vendorExtensions(List<VendorExtension> extensions) {
+    this.vendorExtensions.addAll(nullToEmptyList(extensions));
+    return this;
+  }
+
   public ResponseMessage build() {
-    return new ResponseMessage(code, message, responseModel, headers);
+    return new ResponseMessage(code, message, responseModel, headers, vendorExtensions);
   }
 }

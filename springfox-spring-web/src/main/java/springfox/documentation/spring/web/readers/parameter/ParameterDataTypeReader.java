@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  *
  *
  */
-
 package springfox.documentation.spring.web.readers.parameter;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -37,8 +38,6 @@ import springfox.documentation.spi.schema.contexts.ModelContext;
 import springfox.documentation.spi.service.ParameterBuilderPlugin;
 import springfox.documentation.spi.service.contexts.ParameterContext;
 
-import java.lang.annotation.Annotation;
-
 import static springfox.documentation.schema.Collections.*;
 import static springfox.documentation.schema.Maps.*;
 import static springfox.documentation.schema.ResolvedTypes.*;
@@ -48,6 +47,7 @@ import static springfox.documentation.spi.schema.contexts.ModelContext.*;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ParameterDataTypeReader implements ParameterBuilderPlugin {
+  private static final Logger LOG = LoggerFactory.getLogger(ParameterDataTypeReader.class);
   private final TypeNameExtractor nameExtractor;
   private final TypeResolver resolver;
 
@@ -66,22 +66,29 @@ public class ParameterDataTypeReader implements ParameterBuilderPlugin {
   @Override
   public void apply(ParameterContext context) {
     ResolvedMethodParameter methodParameter = context.resolvedMethodParameter();
-    ResolvedType parameterType = methodParameter.getResolvedParameterType();
+    ResolvedType parameterType = methodParameter.getParameterType();
     parameterType = context.alternateFor(parameterType);
-    Annotation[] methodAnnotations = methodParameter.getMethodParameter().getParameterAnnotations();
     ModelReference modelRef = null;
-    for (Annotation annotation : methodAnnotations) {
-      if (annotation instanceof PathVariable && treatAsAString(parameterType)) {
-        parameterType = resolver.resolve(String.class);
-        modelRef = new ModelRef("string");
-      } else if (annotation instanceof RequestParam && isMapType(parameterType)) {
-        modelRef = new ModelRef("", new ModelRef("string"), true);
-      } else if (annotation instanceof RequestParam && treatRequestParamAsString(parameterType)) {
-        parameterType = resolver.resolve(String.class);
-        modelRef = new ModelRef("string");
+    if (methodParameter.hasParameterAnnotation(PathVariable.class) && treatAsAString(parameterType)) {
+      parameterType = resolver.resolve(String.class);
+      modelRef = new ModelRef("string");
+    } else if (methodParameter.hasParameterAnnotation(RequestParam.class) && isMapType(parameterType)) {
+      modelRef = new ModelRef("", new ModelRef("string"), true);
+    } else if (methodParameter.hasParameterAnnotation(RequestParam.class) && treatRequestParamAsString(parameterType)) {
+      parameterType = resolver.resolve(String.class);
+      modelRef = new ModelRef("string");
+    }
+    if (!methodParameter.hasParameterAnnotations()) {
+      String typeName = typeNameFor(parameterType.getErasedType());
+      if (isBaseType(typeName)) {
+        modelRef = new ModelRef(typeName);
+      } else {
+        LOG.warn("Trying to infer dataType {}", parameterType);
       }
     }
-    ModelContext modelContext = inputParam(parameterType,
+    ModelContext modelContext = inputParam(
+        context.getGroupName(),
+        parameterType,
         context.getDocumentationType(),
         context.getAlternateTypeProvider(),
         context.getGenericNamingStrategy(),

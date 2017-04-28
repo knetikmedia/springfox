@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@
 
 package springfox.documentation.swagger.readers.parameter
 
-import com.google.common.base.Optional
-import io.swagger.annotations.ApiParam
-import org.springframework.core.MethodParameter
+import com.fasterxml.classmate.TypeResolver
+import org.springframework.mock.env.MockEnvironment
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
 import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.mixins.ModelProviderForServiceSupport
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
@@ -46,11 +46,9 @@ class ParameterNameReaderSpec extends DocumentationContextSpec implements ApiPar
 
   def "param required"() {
     given:
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
+      def resolvedMethodParameter =
+          new ResolvedMethodParameter(0, "someName", [apiParam], new TypeResolver().resolve(Object.class))
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
-      def methodParameter = Mock(MethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
-      methodParameter.parameterType >> Object
       ParameterContext parameterContext = new ParameterContext(
           resolvedMethodParameter,
           new ParameterBuilder(),
@@ -69,11 +67,8 @@ class ParameterNameReaderSpec extends DocumentationContextSpec implements ApiPar
   }
 
   def nameReader(annotation) {
-    new ApiParamParameterBuilder() {
-      @Override
-      def Optional<ApiParam> findApiParam(MethodParameter methodParameter) {
-        Optional.fromNullable(annotation)
-      }
+    def descriptions = new DescriptionResolver(new MockEnvironment())
+    new ApiParamParameterBuilder(descriptions) {
     }
   }
 }

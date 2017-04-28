@@ -31,10 +31,12 @@ import springfox.documentation.schema.CodeGenGenericTypeNamingStrategy
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
 import springfox.documentation.service.ApiDescription
 import springfox.documentation.service.ApiInfo
+import springfox.documentation.service.ListVendorExtension
 import springfox.documentation.service.Parameter
 import springfox.documentation.service.ResponseMessage
 import springfox.documentation.service.SecurityScheme
 import springfox.documentation.service.Tag
+import springfox.documentation.service.VendorExtension
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.Defaults
 import springfox.documentation.spi.service.contexts.SecurityContext
@@ -70,7 +72,12 @@ class DocketSpec extends DocumentationContextSpec {
   def "Swagger global response messages should override the default for a particular RequestMethod"() {
     when:
       plugin
-              .globalResponseMessage(GET, [new ResponseMessage(OK.value(), "blah", null, [] as Map)])
+              .globalResponseMessage(GET, [new ResponseMessage(
+          OK.value(),
+          "blah",
+          null,
+          [] as Map,
+          [])])
               .useDefaultResponseMessages(true)
               .configure(contextBuilder)
 
@@ -99,7 +106,12 @@ class DocketSpec extends DocumentationContextSpec {
   def "Swagger global response messages should not be used for a particular RequestMethod"() {
     when:
       new Docket(DocumentationType.SWAGGER_12)
-              .globalResponseMessage(GET, [new ResponseMessage(OK.value(), "blah", null, [] as Map)])
+              .globalResponseMessage(GET, [new ResponseMessage(
+          OK.value(),
+          "blah",
+          null,
+          [] as Map,
+          [])])
               .useDefaultResponseMessages(false)
               .configure(contextBuilder)
 
@@ -141,7 +153,7 @@ class DocketSpec extends DocumentationContextSpec {
   def "Model substitution registers new rules"() {
     when:
       def isjdk8 = System.getProperty("java.version").startsWith("1.8")
-      def jdk8RuleCount = (isjdk8 ? 1 : 0)
+      def jdk8RuleCount = (isjdk8 ? 6 : 0)
       new Docket(DocumentationType.SWAGGER_12)
               ."${method}"(*args)
               .configure(contextBuilder)
@@ -150,8 +162,8 @@ class DocketSpec extends DocumentationContextSpec {
 
     where:
       method                    | args                               | expectedSize
-      'genericModelSubstitutes' | [ResponseEntity.class, List.class] | 8
-      'directModelSubstitute'   | [LocalDate.class, Date.class]      | 7
+      'genericModelSubstitutes' | [ResponseEntity.class, List.class] | 15
+      'directModelSubstitute'   | [LocalDate.class, Date.class]      | 14
   }
 
 
@@ -179,6 +191,11 @@ class DocketSpec extends DocumentationContextSpec {
       'enableUrlTemplating'   | true                                            | 'isUriTemplatesEnabled'
       'tags'                  | new Tag("test", "test")                         | 'tags'
       'globalOperationParameters' | [Mock(Parameter)]                           | 'globalOperationParameters'
+      'extensions'            | extensions()                                          | 'vendorExtensions'
+  }
+
+  List<VendorExtension> extensions() {
+    return Arrays.asList(new ListVendorExtension<String>("test", Arrays.asList("Test")))
   }
 
   def "Code generation strategy property is set"() {

@@ -22,14 +22,16 @@ package springfox.documentation.spring.web.mixins
 import groovy.json.JsonSlurper
 import org.springframework.test.web.servlet.MvcResult
 
-class JsonSupport {
+trait JsonSupport {
 
   def jsonBodyResponse(MvcResult jsonResponse) {
-    String content = jsonResponse.response.getContentAsString()
+    jsonBodyResponse(jsonResponse.response.getContentAsString())
+  }
+
+  def jsonBodyResponse(String content) {
     if (!content) {
       return content
     }
-    def slurper = new JsonSlurper()
-    return slurper.parseText(content)
+    new JsonSlurper().parseText(content)
   }
 }

@@ -41,7 +41,7 @@ class ServicePluginsSupport {
   DocumentationPluginsManager defaultWebPlugins() {
     def resolver = new TypeResolver()
     def plugins = new DocumentationPluginsManager()
-    plugins.apiListingPlugins = create(newArrayList(new MediaTypeReader(resolver), new ApiListingReader()))
+    plugins.apiListingPlugins = create(newArrayList(new MediaTypeReader(), new ApiListingReader()))
     plugins.documentationPlugins = create([])
     plugins.parameterExpanderPlugins = create([new ExpandedParameterBuilder(resolver)])
     plugins.parameterPlugins = create([new ParameterNameReader()])
@@ -49,6 +49,7 @@ class ServicePluginsSupport {
     plugins.resourceGroupingStrategies = create([])
     plugins.operationModelsProviders = create([new OperationModelsProvider(resolver)])
     plugins.defaultsProviders = create([])
+    plugins.apiListingScanners = create([])
     plugins.pathDecorators = create([
         new OperationPathDecorator(),
         new PathSanitizer(),
@@ -69,7 +70,7 @@ class ServicePluginsSupport {
 
     def resolver = new TypeResolver()
     def plugins = new DocumentationPluginsManager()
-    plugins.apiListingPlugins = create(newArrayList(new MediaTypeReader(resolver)))
+    plugins.apiListingPlugins = create(newArrayList(new MediaTypeReader()))
     plugins.documentationPlugins = create(documentationPlugins)
     plugins.parameterExpanderPlugins = create([new ExpandedParameterBuilder(resolver)])
     plugins.parameterPlugins = create(paramPlugins)
@@ -78,6 +79,7 @@ class ServicePluginsSupport {
     plugins.operationModelsProviders = create([new OperationModelsProvider(resolver)])
     plugins.defaultsProviders = create(defaultProviderPlugins)
     plugins.pathDecorators = create(pathDecorators)
+    plugins.apiListingScanners = create([])
     return plugins
   }
 

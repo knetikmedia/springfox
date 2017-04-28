@@ -1,18 +1,7 @@
 {
   "apiVersion": "1.0",
-  "swaggerVersion": "1.2",
-  "basePath": "/",
-  "resourcePath": "/businesses",
-  "produces": [
-    "*/*",
-    "application/json"
-  ],
-  "consumes": [
-    "application/json"
-  ],
   "apis": [
     {
-      "path": "/businesses/aliased/{otherId}",
       "description": "getAliasedPathVariable",
       "operations": [
         {
@@ -20,8 +9,8 @@
           "summary": "Find a business by its id",
           "nickname": "findBusinessById",
           "produces": [
-            "*/*",
-            "application/json"
+            "application/json",
+            "*/*"
           ],
           "consumes": [
             "application/json"
@@ -58,10 +47,10 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/businesses/aliased/{otherId}"
     },
     {
-      "path": "/businesses/byTypes",
       "description": "businessesByCategories",
       "operations": [
         {
@@ -84,10 +73,10 @@
               "description": "types",
               "name": "types",
               "paramType": "query",
-              "type": "array",
               "items": {
                 "type": "string"
               },
+              "type": "array",
               "required": true
             }
           ],
@@ -111,12 +100,13 @@
             }
           ],
           "deprecated": "false",
-          "type": "array",
           "items": {
             "type": "Biz"
-          }
+          },
+          "type": "array"
         }
-      ]
+      ],
+      "path": "/businesses/byTypes"
     },
     {
       "description": "businessAsString",
@@ -163,7 +153,6 @@
       "path": "/businesses/demonstratesApiModelName"
     },
     {
-      "path": "/businesses/non-aliased/{businessId}",
       "description": "getNonAliasedPathVariable",
       "operations": [
         {
@@ -171,8 +160,8 @@
           "summary": "Find a business by its id",
           "nickname": "findBusinessById_1",
           "produces": [
-            "*/*",
-            "application/json"
+            "application/json",
+            "*/*"
           ],
           "consumes": [
             "application/json"
@@ -217,10 +206,10 @@
             ]
           }
         }
-      ]
+      ],
+      "path": "/businesses/non-aliased/{businessId}"
     },
     {
-      "path": "/businesses/responseEntity/{businessId}",
       "description": "getResponseEntity",
       "operations": [
         {
@@ -228,8 +217,8 @@
           "summary": "getResponseEntity",
           "nickname": "getResponseEntityUsingGET",
           "produces": [
-            "*/*",
-            "application/json"
+            "application/json",
+            "*/*"
           ],
           "consumes": [
             "application/json"
@@ -266,10 +255,10 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/businesses/responseEntity/{businessId}"
     },
     {
-      "path": "/businesses/typeEcho",
       "description": "businessTypeEcho",
       "operations": [
         {
@@ -322,10 +311,10 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/businesses/typeEcho"
     },
     {
-      "path": "/businesses/vanilla/{businessId}",
       "description": "getVanillaPathVariable",
       "operations": [
         {
@@ -333,8 +322,8 @@
           "summary": "getVanillaPathVariable",
           "nickname": "getVanillaPathVariableUsingGET",
           "produces": [
-            "*/*",
-            "application/json"
+            "application/json",
+            "*/*"
           ],
           "consumes": [
             "application/json"
@@ -371,8 +360,13 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/businesses/vanilla/{businessId}"
     }
+  ],
+  "basePath": "/",
+  "consumes": [
+    "application/json"
   ],
   "models": {
     "Biz": {
@@ -388,13 +382,14 @@
           "type": "string"
         },
         "id": {
-          "format": "int32",
           "required": false,
+          "format": "int32",
           "type": "integer"
         },
         "inception": {
           "required": false,
-          "type": "LocalDate"
+          "format": "date",
+          "type": "string"
         },
         "name": {
           "required": false,
@@ -405,221 +400,17 @@
           "type": "string"
         },
         "taxDate": {
+          "required": false,
           "format": "date-time",
-          "required": false,
           "type": "string"
-        }
-      }
-    },
-    "Chronology": {
-      "description": "",
-      "id": "Chronology",
-      "properties": {
-        "zone": {
-          "required": false,
-          "type": "DateTimeZone"
-        }
-      }
-    },
-    "DateTimeField": {
-      "description": "",
-      "id": "DateTimeField",
-      "properties": {
-        "durationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "leapDurationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "lenient": {
-          "required": false,
-          "type": "boolean"
-        },
-        "maximumValue": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "minimumValue": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
-        },
-        "rangeDurationField": {
-          "required": false,
-          "type": "DurationField"
-        },
-        "supported": {
-          "required": false,
-          "type": "boolean"
-        },
-        "type": {
-          "required": false,
-          "type": "DateTimeFieldType"
-        }
-      }
-    },
-    "DateTimeFieldType": {
-      "description": "",
-      "id": "DateTimeFieldType",
-      "properties": {
-        "durationType": {
-          "required": false,
-          "type": "DurationFieldType"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
-        },
-        "rangeDurationType": {
-          "required": false,
-          "type": "DurationFieldType"
-        }
-      }
-    },
-    "DateTimeZone": {
-      "description": "",
-      "id": "DateTimeZone",
-      "properties": {
-        "id": {
-          "required": false,
-          "type": "string"
-        },
-        "fixed": {
-          "required": false,
-          "type": "boolean"
-        }
-      }
-    },
-    "DurationField": {
-      "description": "",
-      "id": "DurationField",
-      "properties": {
-        "name": {
-          "required": false,
-          "type": "string"
-        },
-        "precise": {
-          "required": false,
-          "type": "boolean"
-        },
-        "supported": {
-          "required": false,
-          "type": "boolean"
-        },
-        "type": {
-          "required": false,
-          "type": "DurationFieldType"
-        },
-        "unitMillis": {
-          "format": "int64",
-          "required": false,
-          "type": "integer"
-        }
-      }
-    },
-    "DurationFieldType": {
-      "description": "",
-      "id": "DurationFieldType",
-      "properties": {
-        "name": {
-          "required": false,
-          "type": "string"
-        }
-      }
-    },
-    "LocalDate": {
-      "description": "",
-      "id": "LocalDate",
-      "properties": {
-        "centuryOfEra": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "chronology": {
-          "required": false,
-          "type": "Chronology"
-        },
-        "dayOfMonth": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "dayOfWeek": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "dayOfYear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "era": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "fields": {
-          "items": {
-            "type": "DateTimeField"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "fieldTypes": {
-          "items": {
-            "type": "DateTimeFieldType"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "monthOfYear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "values": {
-          "items": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "required": false,
-          "type": "array"
-        },
-        "weekOfWeekyear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "weekyear": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "year": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "yearOfCentury": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "yearOfEra": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
         }
       }
     }
-  }
+  },
+  "produces": [
+    "application/json",
+    "*/*"
+  ],
+  "resourcePath": "/businesses",
+  "swaggerVersion": "1.2"
 }

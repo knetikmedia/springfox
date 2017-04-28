@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2016 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ResponseHeader;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Optional.*;
+import static com.google.common.collect.Lists.*;
 import static org.springframework.core.annotation.AnnotationUtils.*;
 
 public class Annotations {
@@ -48,18 +48,20 @@ public class Annotations {
     return fromNullable(getAnnotation(annotated, ApiParam.class));
   }
 
-  public static Optional<ApiOperation> findApiOperationAnnotation(Method annotated) {
-    return fromNullable(findAnnotation(annotated, ApiOperation.class));
+  public static List<ApiResponses> findApiResponsesAnnotations(AnnotatedElement annotated) {
+    List<ApiResponses> results = newArrayList();
+    ApiResponses currentLevel = getAnnotation(annotated, ApiResponses.class);
+    if (currentLevel != null) {
+      results.add(currentLevel);
+    }
+    if (annotated instanceof Method) {
+      ApiResponses parentLevel = findAnnotation(((Method)annotated).getDeclaringClass(), ApiResponses.class);
+      if (parentLevel != null) {
+        results.add(parentLevel);
+      }
+    }
+    return results;
   }
-
-  public static Optional<ApiResponses> findApiResponsesAnnotations(Method annotated) {
-    return fromNullable(findAnnotation(annotated, ApiResponses.class));
-  }
-
-  public static Optional<ResponseHeader> findResponseHeader(Method annotated) {
-    return fromNullable(findAnnotation(annotated, ResponseHeader.class));
-  }
-
 
   public static Function<ApiOperation, ResolvedType> resolvedTypeFromOperation(final TypeResolver typeResolver,
       final ResolvedType defaultType) {

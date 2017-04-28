@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,23 +20,22 @@
 package springfox.documentation.spi.service.contexts;
 
 
+import com.fasterxml.classmate.members.ResolvedField;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.spi.DocumentationType;
-
-import java.lang.reflect.Field;
 
 public class ParameterExpansionContext {
 
   private final String dataTypeName;
   private final String parentName;
-  private final Field field;
+  private final ResolvedField field;
   private final DocumentationType documentationType;
   private ParameterBuilder parameterBuilder;
 
   public ParameterExpansionContext(
       String dataTypeName,
       String parentName,
-      Field field,
+      ResolvedField field,
       DocumentationType documentationType,
       ParameterBuilder parameterBuilder) {
 
@@ -55,7 +54,7 @@ public class ParameterExpansionContext {
     return parentName;
   }
 
-  public Field getField() {
+  public ResolvedField getField() {
     return field;
   }
 
@@ -66,6 +65,4 @@ public class ParameterExpansionContext {
   public ParameterBuilder getParameterBuilder() {
     return parameterBuilder;
   }
-
-
 }

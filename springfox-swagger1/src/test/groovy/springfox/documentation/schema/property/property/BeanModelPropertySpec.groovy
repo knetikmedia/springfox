@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
  *
  *
  */
-
 package springfox.documentation.schema.property.property
 
 import com.fasterxml.classmate.TypeResolver
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.ImmutableSet
 import spock.lang.Ignore
+import spock.lang.Unroll
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
 import springfox.documentation.schema.configuration.ObjectMapperConfigured
 import springfox.documentation.service.AllowableListValues
@@ -44,10 +44,11 @@ import static springfox.documentation.spi.schema.contexts.ModelContext.*
 class BeanModelPropertySpec extends SchemaSpecification {
 
   def namingStrategy = new DefaultGenericTypeNamingStrategy()
-  def "Extracting information from resolved properties"() {
+  @Unroll
+  def "Extracting information from resolved properties #methodName"() {
     given:
       Class typeToTest = TypeWithGettersAndSetters
-      def modelContext = inputParam(
+      def modelContext = inputParam("group",
           typeToTest,
           SWAGGER_12,
           alternateTypeProvider(),
@@ -60,13 +61,18 @@ class BeanModelPropertySpec extends SchemaSpecification {
       def namingStrategy = new ObjectMapperBeanPropertyNamingStrategy()
       namingStrategy.onApplicationEvent(new ObjectMapperConfigured(this, mapper))
       String propName = name(propertyDefinition, true, namingStrategy)
-      def sut = new BeanModelProperty(propName, method,
-              new TypeResolver(), alternateTypeProvider())
+      def sut = new BeanModelProperty(
+          propName,
+          method,
+          new TypeResolver(),
+          alternateTypeProvider(),
+          propertyDefinition)
 
 
     expect:
       sut.propertyDescription() == null
       !sut.required
+      sut.isReadOnly()
       typeNameExtractor.typeName(fromParent(modelContext, sut.getType())) == typeName
       sut.qualifiedTypeName() == qualifiedTypeName
       sut.allowableValues() == null
@@ -84,7 +90,7 @@ class BeanModelPropertySpec extends SchemaSpecification {
   def "Extracting information from ApiModelProperty annotation"() {
     given:
       Class typeToTest = TypeWithAnnotatedGettersAndSetters
-      def modelContext = inputParam(
+      def modelContext = inputParam("group",
           typeToTest,
           SWAGGER_12,
           alternateTypeProvider(),
@@ -97,12 +103,17 @@ class BeanModelPropertySpec extends SchemaSpecification {
       def namingStrategy = new ObjectMapperBeanPropertyNamingStrategy()
       namingStrategy.onApplicationEvent(new ObjectMapperConfigured(this, mapper))
       String propName = name(propertyDefinition, true, namingStrategy)
-      def sut = new BeanModelProperty(propName, method,
-              new TypeResolver(), alternateTypeProvider())
+      def sut = new BeanModelProperty(
+          propName,
+          method,
+          new TypeResolver(),
+          alternateTypeProvider(),
+          propertyDefinition)
 
     expect:
       sut.propertyDescription() == description
       sut.required == required
+      !sut.isReadOnly()
       typeNameExtractor.typeName(modelContext) == typeName
       sut.qualifiedTypeName() == qualifiedTypeName
 
@@ -125,7 +136,7 @@ class BeanModelPropertySpec extends SchemaSpecification {
 
     given:
       Class typeToTest = typeForTestingJsonGetterAnnotation()
-      def modelContext = inputParam(
+      def modelContext = inputParam("group",
           typeToTest,
           SWAGGER_12,
           alternateTypeProvider(),
@@ -138,8 +149,12 @@ class BeanModelPropertySpec extends SchemaSpecification {
       def namingStrategy = new ObjectMapperBeanPropertyNamingStrategy()
       namingStrategy.onApplicationEvent(new ObjectMapperConfigured(this, mapper))
       String propName = name(propertyDefinition, true, namingStrategy)
-      def sut = new BeanModelProperty(propName, method,
-              new TypeResolver(), alternateTypeProvider())
+      def sut = new BeanModelProperty(
+          propName,
+          method,
+          new TypeResolver(),
+          alternateTypeProvider(),
+          propertyDefinition)
 
     expect:
       typeNameExtractor.typeName(fromParent(modelContext, sut.getType())) == typeName

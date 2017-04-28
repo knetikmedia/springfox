@@ -2,6 +2,7 @@
 
 :releaseVersion: {springfox-released-version}
 :snapshotVersion: {springfox-current-version}
+:springfoxRfc6570Version: {springfox-swagger-ui-rfc6570-version}
 
 === Dependencies
 The Springfox libraries are hosted on https://bintray.com/springfox/maven-repo/springfox/view[bintray] and jcenter.
@@ -88,15 +89,16 @@ dependencies {
 </dependency>
 ----
 
-==== Springfox-swagger2 with Spring MVC and Spring Boot
-[[getting-started]]
+== Quick start guides
+=== Springfox Spring MVC and Spring Boot
+[[getting-started-spring-boot]]
 
 [source,java,linenums]
 ----
 include::../../springfox-spring-config/src/main/java/springfox/springconfig/Swagger2SpringBoot.java[indent=0]
 ----
 
-===== Configuration explained
+=== Configuration explained
 IMPORTANT: This library extensively uses https://github.com/google/guava[googles guava library]. For e.g. when you
 see `newArrayList(...)` its actually the guava equivalent of creating an normal array list and adding item(s) to it.
 
@@ -116,10 +118,10 @@ list.add(new Something());
 <3> `Docket`, Springfox's, primary api configuration mechanism is initialized for swagger specification 2.0
 <4> `select()` returns an instance of `ApiSelectorBuilder` to give fine grained control over the endpoints exposed
 via swagger.
-<5> `apis()` allows selection of `RequestHandler`'s using a predicate. The example here uses an `any` predicate
+<5> `apis()` allows selection of ``RequestHandler``'s using a predicate. The example here uses an `any` predicate
 (default). Out of the box predicates provided are `any`, `none`, `withClassAnnotation`, `withMethodAnnotation` and
 `basePackage`.
-<6> `paths()` allows selection of `Path`'s using a predicate. The example here uses an `any` predicate (default)
+<6> `paths()` allows selection of ``Path``'s using a predicate. The example here uses an `any` predicate (default)
 <7> The selector requires to be built after configuring the api and path selectors. Out of the box we provide
 predicates for `regex`, `ant`, `any`, `none`
 <8> Adds a servlet path mapping, when the servlet has a path mapping. this prefixes paths with the provided path
@@ -160,37 +162,85 @@ override the default behavior.
  to do exactly that.
 There are plenty of more options to configure the `Docket`. This should provide a good start.
 
-===== Support for JSR-303
+=== Springfox Spring Data Rest
+In version greater than 2.6.0, support for spring data rest was added.
+
+NOTE: This is still in ***incubation***.
+
+In order to use it
+
+1. add the `springfox-data-rest` dependency.
+
+==== Gradle
+[source,groovy]
+[subs="verbatim,attributes"]
+----
+dependencies {
+    compile "io.springfox:springfox-data-rest:{releaseVersion}"
+}
+----
+
+==== Maven
+[source,xml]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-data-rest</artifactId>
+    <version>{releaseVersion}</version>
+</dependency>
+----
+
+1. Import the configuration from the `springfox-data-rest` module as shown below
+
+==== java config
+[source,java]
+[subs="verbatim,attributes"]
+----
+//For java config
+@Import({ ... springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration.class, ...})
+----
+
+==== xml config
+Import the bean in your xml configuration by defining a bean of the following type
+
+[source,xml]
+[subs="verbatim,attributes"]
+----
+<bean class="springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration.class" />
+----
+
+=== Springfox Support for JSR-303
 In version greater than 2.3.2, support for bean validation annotations was added, specifically for @NotNull, @Min,
 @Max, and @Size.
 
 In order to use it
 
-<1> add the `springfox-bean-validators` dependency.
+- add the `springfox-bean-validators` dependency.
 
-====== Gradle
+==== Gradle
 [source,groovy]
 [subs="verbatim,attributes"]
 ----
 dependencies {
-    compile "io.springfox:springfox-bean-validators:2.3.2+"
+    compile "io.springfox:springfox-bean-validators:{releaseVersion}"
 }
 ----
 
-====== Maven
+==== Maven
 [source,xml]
 [subs="verbatim,attributes"]
 ----
 <dependency>
     <groupId>io.springfox</groupId>
     <artifactId>springfox-bean-validators</artifactId>
-    <version>2.3.2+</version>
+    <version>{releaseVersion}</version>
 </dependency>
 ----
 
-<2> Import the configuration from the `springfox-bean-validators` module as shown below
+- Import the configuration from the `springfox-bean-validators` module as shown below
 
-====== java config
+==== java config
 [source,java]
 [subs="verbatim,attributes"]
 ----
@@ -198,7 +248,7 @@ dependencies {
 @Import({ ... springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration.class, ...})
 ----
 
-====== xml config
+==== xml config
 Import the bean in your xml configuration by defining a bean of the following type
 
 [source,xml]
@@ -207,7 +257,7 @@ Import the bean in your xml configuration by defining a bean of the following ty
 <bean class="springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration" />
 ----
 
-===== Swagger UI
+=== Springfox Swagger UI
 The `springfox-swagger-ui` http://www.webjars.org/[web jar] ships with https://github.com/swagger-api/swagger-ui[Swagger UI]. To include it in a standard
 Spring Boot application you can add the dependency as follows:
 
@@ -252,18 +302,19 @@ Regarding [where swagger-ui itself is served](http://springfox.github.io/springf
 api docs are served](http://springfox.github.io/springfox/docs/current/#customizing-the-swagger-endpoints) those are
  totally configurable.
 
-====== RFC6570 support *incubating*
+=== Springfox RFC6570 support *incubating*
 NOTE: _Keep in mind this is experimental_!
 In order to use this feature
+
 1. Add `springfox-swagger-ui-rfc6570` instead of `springfox-swagger-ui` as a dependency
-http://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui-rfc6570/0.9.4[experimental swagger-ui].
+http://mvnrepository.com/artifact/io.springfox.ui/springfox-swagger-ui-rfc6570/{springfoxRfc6570Version}[experimental swagger-ui].
 
 For gradle:
 [source,groovy]
 [subs="verbatim,attributes"]
 ----
 dependencies {
-    compile 'io.springfox:springfox-swagger-ui-rfc6570:0.9.4'
+    compile 'io.springfox.ui:springfox-swagger-ui-rfc6570:{springfoxRfc6570Version}'
 }
 ----
 
@@ -272,13 +323,14 @@ For maven:
 [subs="verbatim,attributes"]
 ----
 <dependency>
-    <groupId>io.springfox</groupId>
-    <artifactId>io.springfox:springfox-swagger-ui-rfc6570</artifactId>
-    <version>0.9.4</version>
+    <groupId>io.springfox.ui</groupId>
+    <artifactId>springfox-swagger-ui-rfc6570</artifactId>
+    <version>{springfoxRfc6570Version}</version>
 </dependency>
 ----
+NOTE: The newer version has changed the group id from `_io.springfox_` to `_io.springfox.ui_`!
 
-2. Enable url templating; (http://springfox.github.io/springfox/docs/current/#springfox-swagger2-with-spring-mvc-and-spring-boot[see #21])
+- Enable url templating; (http://springfox.github.io/springfox/docs/current/#springfox-swagger2-with-spring-mvc-and-spring-boot[see #21])
 
 === Springfox samples
 The https://github.com/springfox/springfox-demos[springfox-demos] repository contains a number of samples.
