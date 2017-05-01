@@ -72,6 +72,10 @@ task customizeSwaggerUi << {
   }
   delete "${buildDir}/${swaggerUiExplodedDir}/index.html"
   delete "${buildDir}/${swaggerUiExplodedDir}/swagger-ui.js"
+  copy {
+    from("${projectDir}/src/web/js/swagger-ui.min.js")
+    into("${buildDir}/${swaggerUiExplodedDir}")
+  }
 }
 
 jar {
