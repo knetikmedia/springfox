@@ -79,7 +79,7 @@ By default the swagger service descriptions are generated at the following urls
 |=======================
 |Swagger version  | Documentation Url           | Group
 |1.2              | /api-docs                   | implicit *default* group
-|2.0              | /api-docs?group=external    | *external* group via docket.groupName()
+|1.2              | /api-docs?group=external    | *external* group via docket.groupName()
 |2.0              | /v2/api-docs                | implicit *default* group
 |2.0              | /v2/api-docs?group=external | *external* group via docket.groupName()
 |=======================
@@ -171,6 +171,81 @@ public class CustomJavaPluginConfig {
    //...
 }
 ```
+
+=== Support for documentation from property file lookup
+
+Starting with `2.7.0` we support looking up description from the following annotations given a property just like
+property place holders resolve a value annotation `@Value(${key})`. The following annotations attributes support
+description resolution.
+
+- `@ApiParam#value()`
+- `@ApiImplicitParam#value()`
+- `@ApiModelProperty#value()`
+- `@ApiOperation#value()`
+- `@ApiOperation#notes()`
+- `@RequestParam#defaultValue()`
+- `@RequestHeader#defaultValue()`
+
+Below are examples of how it would work
+
+[[controller-description]]Controller Example
+[source,java]
+.SomeController.java
+----
+
+  @ApiOperation(value = "Find pet by Status",
+      notes = "${SomeController.findPetsByStatus.notes}"...) //<1>
+  @RequestMapping(value = "/findByStatus", method = RequestMethod.GET, params = {"status"})
+  public Pet findPetsByStatus(
+      @ApiParam(value = "${SomeController.findPetsByStatus.status}", //<2>
+           required = true,...)
+      @RequestParam("status",
+          defaultValue="${SomeController.findPetsByStatus.status.default}") String status) { //<3>
+      //...
+  }
+
+  @ApiOperation(notes = "Operation 2", value = "${SomeController.operation2.value}"...) //<4>
+  @ApiImplicitParams(
+      @ApiImplicitParam(name="header1", value="${SomeController.operation2.header1}", ...) //<5>
+  )
+  @RequestMapping(value = "operation2", method = RequestMethod.POST)
+  public ResponseEntity<String> operation2() {
+    return ResponseEntity.ok("");
+  }
+----
+
+<1> Example of `@ApiOperation#notes()`
+<2> Example of `@ApiParam#value()
+<3> Example of `@RequestParam#defaultValue()`
+<4> Example of `@ApiOperation#value()`
+<5> Example of `@ApiImplicitParams#value()`
+
+[[model-description]]Model Example
+
+[source,java]
+.SomeModel.java
+----
+  public class SomeModel {
+    @ApiModelProperty(value = "${SomeModel.someProperty}", ...) //<1>
+    private long someProperty;
+  }
+----
+
+<1> Example of `@ApiModelProperty#value()`
+
+To provide these properties via external properties just add it to your application property file or any property
+source configured by the application as shown below. When a property place holder cannot be found the default
+behavior is to echo the expression as-is.
+
+[source,properties]
+.application.properties
+----
+SomeController.findPetsByStatus.notes=Finds pets by status
+SomeController.findPetsByStatus.status=Status could be one of ...
+SomeController.operation2.header1=Header for bla bla...
+SomeController.operation2.value=Operation 2 do something...
+SomeModel.someProperty=Some property description
+----
 
 ==== Swagger group
 
@@ -282,14 +357,7 @@ use a combination of servlet container and tomcat/jersey etc.
 - The security scheme which describes the techniques you've used to protect the api. Spring fox supports whatever
 schemes swagger specification supports (ApiKey, BasicAuth and OAuth2 (certain profiles))
 - Finally the security contexts which actually provides information on which api's are protected by which schemes. I
-think in your example, you're missing the last piece of the puzzle, the security context see  xref:getting-started[15].
-
-=== Extensibility
-
-The library provides a variety of extensibility hooks to enrich/ augment the schema and service models
-
-- For enriching models and properties (TODO)
-- For enriching services models (TODO)
+think in your example, you're missing the last piece of the puzzle, the security context see  xref:getting-started-spring-boot[15].
 
 === Example application
 
@@ -298,87 +366,8 @@ in the demo application.
 
 == Configuring springfox-staticdocs
 
-Springfox-staticdocs is a module which brings together springfox and https://github.com/RobWin/swagger2markup[swagger2markup].
-Swagger2Markup is a library which simplifies the generation of an up-to-date RESTful API documentation by combining
-documentation that’s been hand-written with auto-generated API documentation produced by Springfox. The result is intended
-to be an up-to-date, easy-to-read, on- and offline user guide. Swagger2Markup converts a Swagger JSON or YAML file into
-several AsciiDoc or GitHub Flavored Markdown documents which can be converted to HTML, PDF and EPUB. The output of
-Swagger2Markup can be used as an alternative to swagger-ui and can be served as static content.
+IMPORTANT: Support for this module has been deprecated in 2.7.0. Since swagger2markup doesnt support jdk6 anymore it is
+difficult for build to co-exist with the newer version of swagger2markup. Please use the
+_latest_ instructions provided in the awesome https://github.com/Swagger2Markup/swagger2markup[Swagger2Markup Library].
 
-=== Usage guide
 
-Adding springfox-staticdocs to your project
-
-==== Maven
-
-[source,xml]
-----
-<dependency>
-    <groupId>io.springfox</groupId>
-    <artifactId>springfox-swagger2</artifactId>
-    <version>{releaseVersion}</version>
-</dependency>
-<dependency>
-    <groupId>io.springfox</groupId>
-    <artifactId>springfox-staticdocs</artifactId>
-    <version>{releaseVersion}</version>
-    <scope>test</scope>
-</dependency>
-----
-
-==== Gradle
-
-[source,groovy]
-----
-dependencies {
-    ...
-    compile 'io.springfox:springfox-swagger2:{releaseVersion}'
-    testCompile 'io.springfox:springfox-staticdocs:{releaseVersion}'
-    ...
-}
-----
-
-==== Generate Markup during an unit test
-
-Spring's MVC Test framework can be used to make a request to a https://github.com/springfox/springfox[springfox] Swagger endpoint during an unit test. The ResultHandler `Swagger2MarkupResultHandler` can be used to convert the Swagger JSON response into an AsciiDoc document. The custom ResultHandler is part of `springfox-staticdocs`. That way you also verify that your Swagger endpoint is working. The following is an example with Spring Boot:
-
-[source,java]
-----
-@WebAppConfiguration
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = Application.class, loader = SpringApplicationContextLoader.class)
-public class Swagger2MarkupTest {
-
-    @Autowired
-    private WebApplicationContext context;
-
-    private MockMvc mockMvc;
-
-    @Before
-    public void setUp() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
-    }
-
-    @Test
-    public void convertSwaggerToAsciiDoc() throws Exception {
-        this.mockMvc.perform(get("/v2/api-docs")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(Swagger2MarkupResultHandler.outputDirectory("src/docs/asciidoc/generated").build())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    public void convertSwaggerToMarkdown() throws Exception {
-        this.mockMvc.perform(get("/v2/api-docs")
-                .accept(MediaType.APPLICATION_JSON))
-                .andDo(Swagger2MarkupResultHandler.outputDirectory("src/docs/markdown/generated")
-                    .withMarkupLanguage(MarkupLanguage.MARKDOWN).build())
-                .andExpect(status().isOk());
-    }
-}
-----
-
-If you want to combine the generated documentation with your hand-written documentation, then have a look at the user guide of https://github.com/RobWin/swagger2markup#combine-generated-documentation-with-your-hand-written-documentation[swagger2Markup]. You can also include generated CURL request, HTTP request and HTTP response example snippets from https://github.com/spring-projects/spring-restdocs[spring-restdocs] into the generated documentation.
-
-==== Generated HTML using Swagger2Markup and AsciidoctorJ
-image::asciidoc_html.PNG[asciidoc_html]

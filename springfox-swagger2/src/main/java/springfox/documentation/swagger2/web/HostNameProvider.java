@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@
  */
 package springfox.documentation.swagger2.web;
 
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UrlPathHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.util.StringUtils.*;
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.*;
 
 public class HostNameProvider {
 
@@ -31,47 +35,50 @@ public class HostNameProvider {
     throw new UnsupportedOperationException();
   }
 
-  static UriComponents componentsFrom(HttpServletRequest request) {
-    ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromServletMapping(request);
+  static UriComponents componentsFrom(
+      HttpServletRequest request,
+      String basePath) {
 
-    ForwardedHeader forwarded = ForwardedHeader.of(request.getHeader(ForwardedHeader.NAME));
-    String proto = hasText(forwarded.getProto()) ? forwarded.getProto() : request.getHeader("X-Forwarded-Proto");
-    String forwardedSsl = request.getHeader("X-Forwarded-Ssl");
+    ServletUriComponentsBuilder builder = fromServletMapping(request, basePath);
 
-    if (hasText(proto)) {
-      builder.scheme(proto);
-    } else if (hasText(forwardedSsl) && forwardedSsl.equalsIgnoreCase("on")) {
-      builder.scheme("https");
-    }
+    UriComponents components = UriComponentsBuilder.fromHttpRequest(
+        new ServletServerHttpRequest(request))
+        .build();
 
-    String host = forwarded.getHost();
-    host = hasText(host) ? host : request.getHeader("X-Forwarded-Host");
-
+    String host = components.getHost();
     if (!hasText(host)) {
       return builder.build();
     }
 
-    String[] hosts = commaDelimitedListToStringArray(host);
-    String hostToUse = hosts[0];
-
-    if (hostToUse.contains(":")) {
-
-      String[] hostAndPort = split(hostToUse, ":");
-
-      builder.host(hostAndPort[0]);
-      builder.port(Integer.parseInt(hostAndPort[1]));
-
-    } else {
-      builder.host(hostToUse);
-      builder.port(-1); // reset port if it was forwarded from default port
-    }
-
-    String port = request.getHeader("X-Forwarded-Port");
-
-    if (hasText(port)) {
-      builder.port(Integer.parseInt(port));
-    }
+    builder.host(host);
+    builder.port(components.getPort());
 
     return builder.build();
+  }
+
+  private static ServletUriComponentsBuilder fromServletMapping(
+      HttpServletRequest request,
+      String basePath) {
+
+    ServletUriComponentsBuilder builder = fromContextPath(request);
+
+    builder.replacePath(prependForwardedPrefix(request, basePath));
+    if (hasText(new UrlPathHelper().getPathWithinServletMapping(request))) {
+      builder.path(request.getServletPath());
+    }
+
+    return builder;
+  }
+
+  private static String prependForwardedPrefix(
+      HttpServletRequest request,
+      String path) {
+
+    String prefix = request.getHeader("X-Forwarded-Prefix");
+    if (prefix != null) {
+      return prefix + path;
+    } else {
+      return path;
+    }
   }
 }

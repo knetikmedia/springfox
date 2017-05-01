@@ -1,15 +1,7 @@
 {
   "apiVersion": "1.0",
-  "swaggerVersion": "1.2",
-  "basePath": "/",
-  "resourcePath": "/foo",
-  "produces": [
-  ],
-  "consumes": [
-  ],
   "apis": [
     {
-      "path": "/foo/create-t",
       "description": "create",
       "operations": [
         {
@@ -29,7 +21,7 @@
               "name": "body",
               "paramType": "body",
               "type": "Resource\u00abPet\u00bb",
-              "required": false
+              "required": true
             }
           ],
           "responseMessages": [
@@ -57,7 +49,8 @@
           "deprecated": "false",
           "type": "void"
         }
-      ]
+      ],
+      "path": "/foo/create-t"
     },
     {
       "description": "delete",
@@ -112,7 +105,6 @@
       "path": "/foo/delete-t/{id}"
     },
     {
-      "path": "/foo/get-t/{id}",
       "description": "get",
       "operations": [
         {
@@ -161,10 +153,52 @@
           "deprecated": "false",
           "type": "Resource\u00abPet\u00bb"
         }
-      ]
+      ],
+      "path": "/foo/get-t/{id}"
     }
   ],
+  "basePath": "/",
+  "consumes": [
+
+  ],
   "models": {
+    "Pet": {
+      "description": "",
+      "id": "Pet",
+      "properties": {
+        "age": {
+          "required": false,
+          "format": "int32",
+          "type": "integer"
+        },
+        "id": {
+          "required": false,
+          "type": "string"
+        },
+        "name": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    },
+    "Link": {
+      "description": "",
+      "id": "Link",
+      "properties": {
+        "href": {
+          "required": false,
+          "type": "string"
+        },
+        "rel": {
+          "required": false,
+          "type": "string"
+        },
+        "templated": {
+          "required": false,
+          "type": "boolean"
+        }
+      }
+    },
     "Resource\u00abPet\u00bb": {
       "description": "",
       "id": "Resource\u00abPet\u00bb",
@@ -200,43 +234,11 @@
           "type": "Resource\u00abPet\u00bb"
         }
       }
-    },
-    "Pet": {
-      "description": "",
-      "id": "Pet",
-      "properties": {
-        "age": {
-          "format": "int32",
-          "required": false,
-          "type": "integer"
-        },
-        "id": {
-          "required": false,
-          "type": "string"
-        },
-        "name": {
-          "required": false,
-          "type": "string"
-        }
-      }
-    },
-    "Link": {
-      "description": "",
-      "id": "Link",
-      "properties": {
-        "href": {
-          "required": false,
-          "type": "string"
-        },
-        "rel": {
-          "required": false,
-          "type": "string"
-        },
-        "templated": {
-          "required": false,
-          "type": "boolean"
-        }
-      }
     }
-  }
+  },
+  "produces": [
+
+  ],
+  "resourcePath": "/foo",
+  "swaggerVersion": "1.2"
 }

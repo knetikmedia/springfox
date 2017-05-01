@@ -19,16 +19,21 @@
 
 package springfox.documentation.spring.web.readers.parameter
 
+import com.fasterxml.classmate.TypeResolver
 import io.swagger.annotations.ApiParam
 import org.springframework.core.MethodParameter
+import org.springframework.mock.env.MockEnvironment
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.ValueConstants
+import spock.lang.Shared
+import spock.lang.Unroll
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.schema.GenericTypeNamingStrategy
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
 
@@ -36,19 +41,21 @@ import java.lang.annotation.Annotation
 
 @Mixin([RequestMappingSupport])
 class ParameterRequiredReaderSpec extends DocumentationContextSpec implements ParameterAnnotationSupport {
+  @Shared description = new DescriptionResolver(new MockEnvironment())
 
-  def "parameters required using default reader"() {
+  @Unroll
+  def "parameters required #paramAnnotations using default reader"() {
     given:
       MethodParameter methodParameter = Mock(MethodParameter)
       methodParameter.getParameterAnnotations() >> (paramAnnotations as Annotation[])
       methodParameter.getParameterType() >> Object.class
       methodParameter.getMethodAnnotation(PathVariable.class) >> paramAnnotations.find { it instanceof PathVariable }
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def resolvedMethodParameter =
+          new ResolvedMethodParameter(0, "", paramAnnotations, new TypeResolver().resolve(Object.class))
       ParameterContext parameterContext = new ParameterContext(resolvedMethodParameter, new ParameterBuilder(),
           context(), Mock(GenericTypeNamingStrategy), Mock(OperationContext))
     when:
-      def operationCommand = new ParameterRequiredReader();
+      def operationCommand = new ParameterRequiredReader(description)
       operationCommand.apply(parameterContext)
     then:
       parameterContext.parameterBuilder().build().isRequired() == expected
@@ -78,10 +85,11 @@ class ParameterRequiredReaderSpec extends DocumentationContextSpec implements Pa
 
   def "should detect java.util.Optional parameters"() {
     given:
-      MethodParameter methodParameter = Mock(MethodParameter)
-      methodParameter.getParameterAnnotations() >> (paramAnnotations as Annotation[])
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def resolvedMethodParameter = new ResolvedMethodParameter(
+        0,
+        "",
+        paramAnnotations,
+        new TypeResolver().resolve(Object.class))
       ParameterContext parameterContext = new ParameterContext(
           resolvedMethodParameter,
           new ParameterBuilder(),
@@ -90,9 +98,9 @@ class ParameterRequiredReaderSpec extends DocumentationContextSpec implements Pa
           Mock(OperationContext))
 
     when:
-      def operationCommand = new ParameterRequiredReader() {
+      def operationCommand = new ParameterRequiredReader(description) {
         @Override
-        def boolean isOptional(MethodParameter input) {
+        def boolean isOptional(ResolvedMethodParameter input) {
           true
         }
       }
@@ -110,7 +118,7 @@ class ParameterRequiredReaderSpec extends DocumentationContextSpec implements Pa
 
   def "Supports all documentation types"() {
     given:
-      def sut = new ParameterRequiredReader()
+      def sut = new ParameterRequiredReader(description)
     expect:
       sut.supports(DocumentationType.SPRING_WEB)
       sut.supports(DocumentationType.SWAGGER_12)

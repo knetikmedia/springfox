@@ -20,6 +20,10 @@
 package springfox.documentation.schema.property;
 
 import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.google.common.base.Optional;
 import springfox.documentation.schema.ResolvedTypes;
 import springfox.documentation.service.AllowableValues;
@@ -31,17 +35,37 @@ import static springfox.documentation.schema.ResolvedTypes.*;
 public abstract class BaseModelProperty implements ModelProperty {
 
   private final String name;
+  protected final BeanPropertyDefinition jacksonProperty;
+  protected final Optional<JsonFormat> jsonFormatAnnotation;
+  protected final TypeResolver resolver;
   protected final AlternateTypeProvider alternateTypeProvider;
 
-  public BaseModelProperty(String name, AlternateTypeProvider alternateTypeProvider) {
+  public BaseModelProperty(
+      String name,
+      TypeResolver resolver,
+      AlternateTypeProvider alternateTypeProvider,
+      BeanPropertyDefinition jacksonProperty) {
     this.name = name;
+    this.resolver = resolver;
     this.alternateTypeProvider = alternateTypeProvider;
+    this.jacksonProperty = jacksonProperty;
+    AnnotatedMember primaryMember = jacksonProperty.getPrimaryMember();
+    if (primaryMember != null) {
+      jsonFormatAnnotation = Optional.fromNullable(primaryMember.getAnnotation(JsonFormat.class));
+    } else {
+      jsonFormatAnnotation = Optional.absent();
+    }
   }
 
   protected abstract ResolvedType realType();
 
   @Override
   public ResolvedType getType() {
+    if (jsonFormatAnnotation.isPresent()) {
+      if (jsonFormatAnnotation.get().shape() == JsonFormat.Shape.STRING) {
+        return resolver.resolve(String.class);
+      }
+    }
     return alternateTypeProvider.alternateFor(realType());
   }
 
@@ -70,12 +94,12 @@ public abstract class BaseModelProperty implements ModelProperty {
 
   @Override
   public boolean isRequired() {
-    return false;
+    return jacksonProperty.isRequired();
   }
 
   @Override
   public boolean isReadOnly() {
-    return false;
+    return !jacksonProperty.hasSetter();
   }
 
   @Override
@@ -86,5 +110,14 @@ public abstract class BaseModelProperty implements ModelProperty {
   @Override
   public int position() {
     return 0;
+  }
+
+  public String example() {
+    if (jsonFormatAnnotation.isPresent()) {
+      if (jsonFormatAnnotation.get().shape() == JsonFormat.Shape.STRING) {
+        return jsonFormatAnnotation.get().pattern();
+      }
+    }
+    return null;
   }
 }

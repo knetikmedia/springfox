@@ -24,7 +24,11 @@ import com.google.common.base.Optional;
 import springfox.documentation.schema.ModelReference;
 import springfox.documentation.service.AllowableValues;
 import springfox.documentation.service.Parameter;
+import springfox.documentation.service.VendorExtension;
 
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 import static springfox.documentation.builders.BuilderDefaults.*;
 
 public class ParameterBuilder {
@@ -38,7 +42,8 @@ public class ParameterBuilder {
   private String paramAccess;
   private ResolvedType type;
   private ModelReference modelRef;
-
+  private boolean hidden;
+  private List<VendorExtension> vendorExtensions = newArrayList();
 
   /**
    * Copy builder
@@ -56,7 +61,9 @@ public class ParameterBuilder {
         .parameterAccess(other.getParamAccess())
         .parameterType(other.getParamType())
         .required(other.isRequired())
-        .type(other.getType().orNull());
+        .type(other.getType().orNull())
+        .hidden(other.isHidden())
+        .vendorExtensions(other.getVendorExtentions());
   }
 
   /**
@@ -170,7 +177,28 @@ public class ParameterBuilder {
     this.modelRef = defaultIfAbsent(modelRef, this.modelRef);
     return this;
   }
+  
+  /**
+   * Updates if the parameter is hidden
+   *
+   * @param hidden - flag to indicate if the parameter is hidden
+   * @return this
+   */
+  public ParameterBuilder hidden(boolean hidden) {
+    this.hidden = hidden;
+    return this;
+  }
 
+  /**
+   * Updates the parameter extensions
+   *
+   * @param extensions - parameter extensions
+   * @return this
+   */
+  public ParameterBuilder vendorExtensions(List<VendorExtension> extensions) {
+    this.vendorExtensions.addAll(nullToEmptyList(extensions));
+    return this;
+  }
 
   public Parameter build() {
     return new Parameter(
@@ -183,6 +211,8 @@ public class ParameterBuilder {
         Optional.fromNullable(type),
         allowableValues,
         paramType,
-        paramAccess);
+        paramAccess,
+        hidden,
+        vendorExtensions);
   }
 }

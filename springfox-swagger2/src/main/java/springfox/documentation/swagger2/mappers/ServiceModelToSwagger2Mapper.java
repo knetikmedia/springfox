@@ -41,6 +41,7 @@ import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.ApiListing;
 import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.Documentation;
+import springfox.documentation.service.Header;
 import springfox.documentation.service.ResponseMessage;
 
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public abstract class ServiceModelToSwagger2Mapper {
       @Mapping(target = "parameters", ignore = true),
       @Mapping(target = "responses", ignore = true),
       @Mapping(target = "externalDocs", ignore = true),
-      @Mapping(target = "vendorExtensions", ignore = true)
+      @Mapping(target = "vendorExtensions", source = "vendorExtensions")
   })
   public abstract Swagger mapDocumentation(Documentation from);
 
@@ -80,7 +81,7 @@ public abstract class ServiceModelToSwagger2Mapper {
           qualifiedBy = { LicenseMapper.LicenseTranslator.class, LicenseMapper.License.class }),
       @Mapping(target = "contact", source = "from.contact"),
       @Mapping(target = "termsOfService", source = "termsOfServiceUrl"),
-      @Mapping(target = "vendorExtensions", ignore = true)
+      @Mapping(target = "vendorExtensions", source = "vendorExtensions")
   })
   protected abstract Info mapApiInfo(ApiInfo from);
 
@@ -129,22 +130,27 @@ public abstract class ServiceModelToSwagger2Mapper {
           .schema(responseProperty);
       response.setExamples(Maps.<String, Object>newHashMap());
       response.setHeaders(transformEntries(responseMessage.getHeaders(), toPropertyEntry()));
+      Map<String, Object> extensions = new VendorExtensionsMapper()
+          .mapExtensions(responseMessage.getVendorExtensions());
+      response.getVendorExtensions().putAll(extensions);
       responses.put(String.valueOf(responseMessage.getCode()), response);
     }
     return responses;
   }
 
-  private EntryTransformer<String, ModelReference, Property> toPropertyEntry() {
-    return new EntryTransformer<String, ModelReference, Property>() {
+  private EntryTransformer<String, Header, Property> toPropertyEntry() {
+    return new EntryTransformer<String, Header, Property>() {
       @Override
-      public Property transformEntry(String key, ModelReference value) {
-        return modelRefToProperty(value);
+      public Property transformEntry(String key, Header value) {
+        Property property = modelRefToProperty(value.getModelReference());
+        property.setDescription(value.getDescription());
+        return property;
       }
     };
   }
 
   protected Map<String, Path> mapApiListings(Multimap<String, ApiListing> apiListings) {
-    Map<String, Path> paths = newHashMap();
+    Map<String, Path> paths = newTreeMap();
     for (ApiListing each : apiListings.values()) {
       for (ApiDescription api : each.getApis()) {
         paths.put(api.getPath(), mapOperations(api, Optional.fromNullable(paths.get(api.getPath()))));

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import springfox.documentation.service.AllowableRangeValues;
 import springfox.documentation.service.AllowableValues;
 import springfox.documentation.service.ApiListing;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
@@ -60,7 +59,7 @@ public abstract class ModelMapper {
       return null;
     }
 
-    Map<String, Model> map = new HashMap<String, Model>();
+    Map<String, Model> map = newTreeMap();
 
     for (java.util.Map.Entry<String, springfox.documentation.schema.Model> entry : from.entrySet()) {
       String key = entry.getKey();
@@ -126,7 +125,10 @@ public abstract class ModelMapper {
   Optional<Class> typeOfValue(springfox.documentation.schema.Model source) {
     Optional<ResolvedType> mapInterface = findMapInterface(source.getType());
     if (mapInterface.isPresent()) {
-      return Optional.of((Class) mapInterface.get().getTypeParameters().get(1).getErasedType());
+      if (mapInterface.get().getTypeParameters().size() == 2) {
+        return Optional.of((Class) mapInterface.get().getTypeParameters().get(1).getErasedType());
+      }
+      return Optional.of((Class) Object.class);
     }
     return Optional.absent();
   }
@@ -146,23 +148,27 @@ public abstract class ModelMapper {
     }
 
     if (property instanceof AbstractNumericProperty) {
+      AbstractNumericProperty numericProperty = (AbstractNumericProperty) property;
       AllowableValues allowableValues = source.getAllowableValues();
       if (allowableValues instanceof AllowableRangeValues) {
         AllowableRangeValues range = (AllowableRangeValues) allowableValues;
-        ((AbstractNumericProperty) property).maximum(Double.valueOf(range.getMax()));
-        ((AbstractNumericProperty) property).minimum(Double.valueOf(range.getMin()));
+        numericProperty.maximum(safeBigDecimal(range.getMax()));
+        numericProperty.exclusiveMaximum(range.getExclusiveMax());
+        numericProperty.minimum(safeBigDecimal(range.getMin()));
+        numericProperty.exclusiveMinimum(range.getExclusiveMin());
       }
     }
 
     if (property instanceof StringProperty) {
+      StringProperty stringProperty = (StringProperty) property;
       AllowableValues allowableValues = source.getAllowableValues();
       if (allowableValues instanceof AllowableRangeValues) {
         AllowableRangeValues range = (AllowableRangeValues) allowableValues;
-        ((StringProperty) property).maxLength(Integer.valueOf(range.getMax()));
-        ((StringProperty) property).minLength(Integer.valueOf(range.getMin()));
+        stringProperty.maxLength(safeInteger(range.getMax()));
+        stringProperty.minLength(safeInteger(range.getMin()));
       }
-      if(source.getPattern() != null) {
-        ((StringProperty) property).setPattern(source.getPattern());
+      if (source.getPattern() != null) {
+        stringProperty.setPattern(source.getPattern());
       }
     }
 
@@ -173,9 +179,21 @@ public abstract class ModelMapper {
       property.setReadOnly(source.isReadOnly());
       property.setExample(source.getExample());
     }
+
+    Map<String, Object> extensions = new VendorExtensionsMapper()
+        .mapExtensions(source.getVendorExtensions());
+    property.getVendorExtensions().putAll(extensions);
+
     return property;
   }
 
+  static Integer safeInteger(String doubleString) {
+    try {
+      return Integer.valueOf(doubleString);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
 
   static Property modelRefToProperty(ModelReference modelRef) {
     if (modelRef == null || "void".equalsIgnoreCase(modelRef.getType())) {
@@ -183,11 +201,9 @@ public abstract class ModelMapper {
     }
     Property responseProperty;
     if (modelRef.isCollection()) {
-      responseProperty = new ArrayProperty(
-          maybeAddAllowableValues(itemTypeProperty(modelRef.itemModel().get()), modelRef.getAllowableValues()));
+      responseProperty = property(modelRef);
     } else if (modelRef.isMap()) {
-      String itemType = modelRef.getItemType();
-      responseProperty = new MapProperty(property(itemType));
+      responseProperty = new MapProperty(property(modelRef.itemModel().get()));
     } else {
       responseProperty = property(modelRef.getType());
     }
@@ -198,7 +214,7 @@ public abstract class ModelMapper {
   }
 
   Map<String, Model> modelsFromApiListings(Multimap<String, ApiListing> apiListings) {
-    Map<String, springfox.documentation.schema.Model> definitions = newHashMap();
+    Map<String, springfox.documentation.schema.Model> definitions = newTreeMap();
     for (ApiListing each : apiListings.values()) {
       definitions.putAll(each.getModels());
     }

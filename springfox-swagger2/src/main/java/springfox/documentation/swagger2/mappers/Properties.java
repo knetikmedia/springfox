@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
 import io.swagger.models.properties.ArrayProperty;
+import io.swagger.models.properties.BaseIntegerProperty;
 import io.swagger.models.properties.BooleanProperty;
+import io.swagger.models.properties.ByteArrayProperty;
 import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.DateTimeProperty;
 import io.swagger.models.properties.DecimalProperty;
@@ -35,6 +37,7 @@ import io.swagger.models.properties.FileProperty;
 import io.swagger.models.properties.FloatProperty;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.LongProperty;
+import io.swagger.models.properties.MapProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
@@ -64,11 +67,11 @@ class Properties {
       .put("date", newInstanceOf(DateProperty.class))
       .put("date-time", newInstanceOf(DateTimeProperty.class))
       .put("bigdecimal", newInstanceOf(DecimalProperty.class))
-      .put("biginteger", newInstanceOf(DecimalProperty.class))
+      .put("biginteger", newInstanceOf(BaseIntegerProperty.class))
       .put("uuid", newInstanceOf(UUIDProperty.class))
       .put("object", newInstanceOf(ObjectProperty.class))
       .put("byte", bytePropertyFactory())
-      .put("file", filePropertyFactory())
+      .put("__file", filePropertyFactory())
       .build();
 
   private Properties() {
@@ -80,6 +83,28 @@ class Properties {
     Function<String, Function<String, ? extends Property>> propertyLookup
         = forMap(typeFactory, voidOrRef(safeTypeName));
     return propertyLookup.apply(safeTypeName.toLowerCase()).apply(safeTypeName);
+  }
+
+  public static Property property(final ModelReference modelRef) {
+    if (modelRef.isMap()) {
+      return new MapProperty(property(modelRef.itemModel().get()));
+    } else if (modelRef.isCollection()) {
+      if ("byte".equals(modelRef.itemModel().transform(toTypeName()).or(""))) {
+        return new ByteArrayProperty();
+      }
+      return new ArrayProperty(
+          maybeAddAllowableValues(itemTypeProperty(modelRef.itemModel().get()), modelRef.getAllowableValues()));
+    }
+    return property(modelRef.getType());
+  }
+
+  private static Function<? super ModelReference, String> toTypeName() {
+    return new Function<ModelReference, String>() {
+      @Override
+      public String apply(ModelReference input) {
+        return input.getType();
+      }
+    };
   }
 
   public static Property itemTypeProperty(ModelReference paramModel) {

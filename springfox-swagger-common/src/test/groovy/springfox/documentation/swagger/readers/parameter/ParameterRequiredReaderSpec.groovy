@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,25 +19,26 @@
 
 package springfox.documentation.swagger.readers.parameter
 
-import com.google.common.base.Optional
-import io.swagger.annotations.ApiParam
-import org.springframework.core.MethodParameter
+import com.fasterxml.classmate.TypeResolver
+import org.springframework.mock.env.MockEnvironment
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
 import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
 
 @Mixin([RequestMappingSupport])
 class ParameterRequiredReaderSpec extends DocumentationContextSpec implements ApiParamAnnotationSupport {
-
+  def descriptions = new DescriptionResolver(new MockEnvironment())
+  
   def "parameters required using default reader"() {
     given:
       def parameterContext = setupParameterContext(paramAnnotation)
     when:
-      def operationCommand = stubbedParamBuilder(paramAnnotation);
+      def operationCommand = stubbedParamBuilder()
       operationCommand.apply(parameterContext)
     then:
       parameterContext.parameterBuilder().build().isRequired() == expected
@@ -48,12 +49,27 @@ class ParameterRequiredReaderSpec extends DocumentationContextSpec implements Ap
       null                        | false
   }
 
+  def "parameters hidden using default reader"() {
+    given:
+      def parameterContext = setupParameterContext(paramAnnotation)
+    when:
+      def operationCommand = stubbedParamBuilder()
+      operationCommand.apply(parameterContext)
+    then:
+      parameterContext.parameterBuilder().build().isHidden() == expected
+    where:
+      paramAnnotation             | expected
+      apiParamWithHidden(false)   | false
+      apiParamWithHidden(true)    | true
+      null                        | false
+  }
+
   def setupParameterContext(paramAnnotation) {
-    MethodParameter methodParameter = Mock(MethodParameter)
-    methodParameter.getParameterAnnotation(ApiParam) >> paramAnnotation
-    methodParameter.getParameterType() >> Object.class
-    def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-    resolvedMethodParameter.methodParameter >> methodParameter
+    def resolvedMethodParameter = new ResolvedMethodParameter(
+        0,
+        "",
+        [paramAnnotation],
+        new TypeResolver().resolve(Object.class))
     def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
     new ParameterContext(
         resolvedMethodParameter,
@@ -63,12 +79,7 @@ class ParameterRequiredReaderSpec extends DocumentationContextSpec implements Ap
         Mock(OperationContext))
   }
 
-  def stubbedParamBuilder(ApiParam apiParamAnnotation) {
-    new ApiParamParameterBuilder() {
-      @Override
-      def Optional<ApiParam> findApiParam(MethodParameter methodParameter) {
-        Optional.fromNullable(apiParamAnnotation)
-      }
-    }
+  def stubbedParamBuilder() {
+    new ApiParamParameterBuilder(descriptions)
   }
 }

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -55,80 +55,102 @@ import java.util.List;
 import java.util.Map;
 
 @RequestMapping(produces = {"application/json"}, consumes = {"application/json", "application/xml"})
+@ApiResponses({
+  @ApiResponse(code = 404, response = RestError.class, message = "Not Found")
+})
 public class DummyClass {
 
 
   @ApiParam
   public void annotatedWithApiParam() {
+    throw new UnsupportedOperationException();
   }
 
   public void dummyMethod() {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithOneArgs(int a) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithTwoArgs(int a, String b) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithNoArgs() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "description", httpMethod = "GET")
   public void methodWithHttpGETMethod() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "description", nickname = "unique")
   public void methodWithNickName() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "description", httpMethod = "GET", hidden = true)
   public void methodThatIsHidden() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "description", httpMethod = "RUBBISH")
   public void methodWithInvalidHttpMethod() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "summary", httpMethod = "RUBBISH")
   public void methodWithSummary() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", notes = "some notes")
   public void methodWithNotes() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", nickname = "a nickname")
   public void methodWithNickname() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", position = 5)
   public void methodWithPosition() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", consumes = "application/xml")
   public void methodWithXmlConsumes() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", produces = "application/xml")
   public void methodWithXmlProduces() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", produces = "application/xml, application/json", consumes = "application/xml, " +
           "application/json")
   public void methodWithMultipleMediaTypes() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", produces = "application/xml", consumes = "application/xml")
   public void methodWithBothXmlMediaTypes() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", produces = "application/json", consumes = "application/xml")
   public void methodWithMediaTypeAndFile(MultipartFile multipartFile) {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "", response = DummyModels.FunkyBusiness.class)
   public void methodApiResponseClass() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiResponses({
@@ -136,6 +158,7 @@ public class DummyClass {
           @ApiResponse(code = 500, response = RestError.class, message = "Internal Server Error"),
           @ApiResponse(code = 406, response = RestError.class, message = "Not acceptable")})
   public void methodAnnotatedWithApiResponse() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "methodWithExtensions",
@@ -145,6 +168,7 @@ public class DummyClass {
       }
   )
   public void methodWithExtensions() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "SomeVal",
@@ -152,6 +176,7 @@ public class DummyClass {
           scopes = {@AuthorizationScope(scope = "scope", description = "scope description")
           }))
   public void methodWithAuth() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiOperation(value = "")
@@ -168,6 +193,10 @@ public class DummyClass {
     return null;
   }
 
+  public byte[] methodWithByteArray() {
+    return null;
+  }
+
   public ResponseEntity<DummyClass[]> methodWithGenericComplexArray() {
     return null;
   }
@@ -178,46 +207,58 @@ public class DummyClass {
 
   @Deprecated
   public void methodWithDeprecated() {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithServletRequest(ServletRequest req) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithBindingResult(BindingResult res) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithInteger(Integer integer) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithAnnotatedInteger(@Ignorable Integer integer) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithModelAttribute(@ModelAttribute Example example) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithoutModelAttribute(Example example) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodWithTreeishModelAttribute(@ModelAttribute Treeish example) {
+    throw new UnsupportedOperationException();
   }
 
   @RequestMapping("/businesses/{businessId}")
   public void methodWithSinglePathVariable(@PathVariable String businessId) {
+    throw new UnsupportedOperationException();
 
   }
 
   @RequestMapping("/businesses/{businessId}")
   public void methodWithSingleEnum(BusinessType businessType) {
+    throw new UnsupportedOperationException();
 
   }
 
   @RequestMapping("/businesses/{businessId}")
   public void methodWithSingleEnumArray(BusinessType[] businessTypes) {
+    throw new UnsupportedOperationException();
 
   }
 
   @RequestMapping("/businesses/{businessId}/employees/{employeeId}/salary")
   public void methodWithRatherLongRequestPath() {
+    throw new UnsupportedOperationException();
 
   }
 
@@ -229,11 +270,25 @@ public class DummyClass {
   @ApiImplicitParam(name = "Authentication", dataType = "string", required = true, paramType = "header",
           value = "Authentication token")
   public void methodWithApiImplicitParam() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiImplicitParam(name = "Authentication", dataType = "string", required = true, paramType = "header",
           value = "Authentication token")
   public void methodWithApiImplicitParamAndInteger(Integer integer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @ApiImplicitParam(name = "Authentication", dataType = "Example", required = true, paramType = "header",
+      value = "Authentication token")
+  public void methodWithApiImplicitParamAndExample(Integer integer) {
+    throw new UnsupportedOperationException();
+  }
+
+  @ApiImplicitParam(name = "Authentication", dataType = "string", required = true, paramType = "header",
+      value = "Authentication token", allowMultiple = true)
+  public void methodWithApiImplicitParamAndAllowMultiple(Integer integer) {
+    throw new UnsupportedOperationException();
   }
 
   @ApiImplicitParams({
@@ -243,6 +298,7 @@ public class DummyClass {
                   value = "Authentication token")
   })
   public void methodWithApiImplicitParams(Integer integer) {
+    throw new UnsupportedOperationException();
   }
 
   public interface ApiImplicitParamsInterface {
@@ -280,6 +336,7 @@ public class DummyClass {
   @ResponseBody
   @ResponseStatus(value = HttpStatus.NO_CONTENT)
   public void methodWithResponseStatusAnnotationAndEmptyReason() {
+    throw new UnsupportedOperationException();
   }
 
   @ResponseBody
@@ -311,18 +368,21 @@ public class DummyClass {
           @RequestBody DummyModels.BusinessModel model,
           HttpServletResponse response,
           DummyModels.AnnotatedBusinessModel annotatedBusinessModel) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodParameterWithRequestPartAnnotation(
           @RequestPart DummyModels.BusinessModel model,
           HttpServletResponse response,
           DummyModels.AnnotatedBusinessModel annotatedBusinessModel) {
+    throw new UnsupportedOperationException();
   }
 
   public void methodParameterWithRequestPartAnnotationOnSimpleType(
           @RequestPart String model,
           HttpServletResponse response,
           DummyModels.AnnotatedBusinessModel annotatedBusinessModel) {
+    throw new UnsupportedOperationException();
   }
 
   @ResponseBody
@@ -333,12 +393,14 @@ public class DummyClass {
 
   @ApiResponses({@ApiResponse(code = 413, message = "a message")})
   public void methodWithApiResponses() {
+    throw new UnsupportedOperationException();
   }
 
   @ApiIgnore
   public static class ApiIgnorableClass {
     @ApiIgnore
     public void dummyMethod() {
+      throw new UnsupportedOperationException();
     }
   }
 
@@ -355,6 +417,7 @@ public class DummyClass {
 
   @ResponseBody
   public void methodToTestBidrectionalRecursiveTypes(@RequestBody Pirate model) {
+    throw new UnsupportedOperationException();
   }
 
   public enum BusinessType {
@@ -380,6 +443,7 @@ public class DummyClass {
     }
 
     public void methodToTest(Integer integer, Child child) {
+      throw new UnsupportedOperationException();
     }
 
   }

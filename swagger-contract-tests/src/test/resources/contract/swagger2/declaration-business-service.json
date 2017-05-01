@@ -37,8 +37,8 @@
         ],
         "produces": [
           "application/xml",
-          "*/*",
-          "application/json"
+          "application/json",
+          "*/*"
         ],
         "parameters": [
           {
@@ -143,8 +143,8 @@
         ],
         "produces": [
           "application/xml",
-          "*/*",
-          "application/json"
+          "application/json",
+          "*/*"
         ],
         "parameters": [
           {
@@ -183,9 +183,9 @@
           "application/json"
         ],
         "produces": [
-          "*/*",
           "application/xml",
-          "application/json"
+          "application/json",
+          "*/*"
         ],
         "parameters": [
           {
@@ -260,9 +260,9 @@
           "application/json"
         ],
         "produces": [
-          "*/*",
           "application/xml",
-          "application/json"
+          "application/json",
+          "*/*"
         ],
         "parameters": [
           {
@@ -285,6 +285,11 @@
     }
   },
   "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
     "petstore_auth": {
       "type": "oauth2",
       "authorizationUrl": "http://petstore.swagger.io/api/oauth/dialog",
@@ -293,59 +298,9 @@
         "write:pets": "modify pets in your account",
         "read:pets": "read your pets"
       }
-    },
-    "api_key": {
-      "type": "apiKey",
-      "name": "api_key",
-      "in": "header"
     }
   },
   "definitions": {
-    "DateTimeField": {
-      "type": "object",
-      "properties": {
-        "durationField": {
-          "$ref": "#/definitions/DurationField"
-        },
-        "leapDurationField": {
-          "$ref": "#/definitions/DurationField"
-        },
-        "lenient": {
-          "type": "boolean"
-        },
-        "maximumValue": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "minimumValue": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "name": {
-          "type": "string"
-        },
-        "rangeDurationField": {
-          "$ref": "#/definitions/DurationField"
-        },
-        "supported": {
-          "type": "boolean"
-        },
-        "type": {
-          "$ref": "#/definitions/DateTimeFieldType"
-        }
-      }
-    },
-    "DateTimeZone": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "fixed": {
-          "type": "boolean"
-        }
-      }
-    },
     "Biz": {
       "type": "object",
       "properties": {
@@ -361,7 +316,8 @@
           "format": "int32"
         },
         "inception": {
-          "$ref": "#/definitions/LocalDate"
+          "type": "string",
+          "format": "date"
         },
         "name": {
           "type": "string"
@@ -372,128 +328,6 @@
         "taxDate": {
           "type": "string",
           "format": "date-time"
-        }
-      }
-    },
-    "DurationFieldType": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "LocalDate": {
-      "type": "object",
-      "properties": {
-        "centuryOfEra": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "chronology": {
-          "$ref": "#/definitions/Chronology"
-        },
-        "dayOfMonth": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "dayOfWeek": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "dayOfYear": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "era": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "fieldTypes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DateTimeFieldType"
-          }
-        },
-        "fields": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DateTimeField"
-          }
-        },
-        "monthOfYear": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "weekOfWeekyear": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "weekyear": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "year": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "yearOfCentury": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "yearOfEra": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "DurationField": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "precise": {
-          "type": "boolean"
-        },
-        "supported": {
-          "type": "boolean"
-        },
-        "type": {
-          "$ref": "#/definitions/DurationFieldType"
-        },
-        "unitMillis": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "Chronology": {
-      "type": "object",
-      "properties": {
-        "zone": {
-          "$ref": "#/definitions/DateTimeZone"
-        }
-      }
-    },
-    "DateTimeFieldType": {
-      "type": "object",
-      "properties": {
-        "durationType": {
-          "$ref": "#/definitions/DurationFieldType"
-        },
-        "name": {
-          "type": "string"
-        },
-        "rangeDurationType": {
-          "$ref": "#/definitions/DurationFieldType"
         }
       }
     }

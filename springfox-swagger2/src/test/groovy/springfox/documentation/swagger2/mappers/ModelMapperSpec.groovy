@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import io.swagger.models.properties.ObjectProperty
 import io.swagger.models.properties.RefProperty
 import io.swagger.models.properties.StringProperty
 import org.mapstruct.factory.Mappers
+import spock.lang.Unroll
 import springfox.documentation.builders.ModelPropertyBuilder
 import springfox.documentation.schema.*
 import springfox.documentation.schema.mixins.TypesForTestingSupport
@@ -35,6 +36,7 @@ import static com.google.common.base.Suppliers.*
 import static com.google.common.collect.Maps.*
 import static springfox.documentation.schema.ResolvedTypes.*
 import static springfox.documentation.spi.schema.contexts.ModelContext.*
+import static springfox.documentation.swagger2.mappers.ModelMapper.safeInteger
 
 @Mixin([TypesForTestingSupport, AlternateTypesSupport])
 class ModelMapperSpec extends SchemaSpecification {
@@ -45,6 +47,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Model model = modelProvider.modelFor(
         inputParam(
+            "group",
             typeToTest,
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -68,6 +71,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Model model = modelProvider.modelFor(
           inputParam(
+              "group",
               typeWithVoidLists(),
               DocumentationType.SWAGGER_2,
               alternateTypeProvider(),
@@ -89,6 +93,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Map<String, Model> modelMap = modelProvider.dependencies(
         inputParam(
+            "group",
             listOfMapOfStringToString(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -107,6 +112,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Map<String, Model> modelMap = modelProvider.dependencies(
         inputParam(
+            "group",
             listOfModelMap(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -125,6 +131,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Map<String, Model> modelMap = modelProvider.dependencies(
         inputParam(
+            "group",
             listOfMapOfStringToSimpleType(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -144,6 +151,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Map<String, Model> modelMap = modelProvider.dependencies(
         inputParam(
+            "group",
             listOfErasedMap(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -159,8 +167,8 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Model model = modelProvider.modelFor(
         inputParam(
-            genericClassOfType(
-                Void),
+            "group",
+            genericClassOfType(Void),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
             namingStrategy,
@@ -191,6 +199,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Model model = modelProvider.modelFor(
         inputParam(
+            "group",
             simpleType(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -252,6 +261,21 @@ class ModelMapperSpec extends SchemaSpecification {
       !valueClass.isPresent()
   }
 
+  @Unroll
+  def "safe parses #stringValue" () {
+    when:
+      def safeParsed = safeInteger(stringValue)
+    then:
+      safeParsed == expected
+    where:
+      stringValue | expected
+      "0"         | 0
+      "infinity"  | null
+      "-infinity" | null
+      "1.0"       | null
+
+  }
+
 
 
   ModelProperty updatedIntObject(ModelProperty modelProperty) {
@@ -274,6 +298,7 @@ class ModelMapperSpec extends SchemaSpecification {
     given:
       Model model = modelProvider.modelFor(
         inputParam(
+            "group",
             simpleType(),
             DocumentationType.SWAGGER_2,
             alternateTypeProvider(),
@@ -361,7 +386,8 @@ class ModelMapperSpec extends SchemaSpecification {
         '',
         null,
         '',
-        '').with {
+        '',
+        []).with {
       it.updateModelRef({ rt -> new ModelRef(simpleQualifiedTypeName(stringProperty)) })
       it
     }

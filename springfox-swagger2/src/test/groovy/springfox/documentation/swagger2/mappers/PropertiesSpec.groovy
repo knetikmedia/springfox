@@ -1,3 +1,21 @@
+/*
+ *
+ *  Copyright 2017 the original author or authors.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
+ */
 package springfox.documentation.swagger2.mappers
 
 import io.swagger.models.properties.*
@@ -28,6 +46,27 @@ class PropertiesSpec extends Specification {
       byteProp.format == "byte"
   }
 
+  def "List is represented as a string with a format" () {
+    when:
+      def listProp = property(new ModelRef("List", new ModelRef("string")))
+    then:
+      listProp instanceof ArrayProperty
+  }
+
+  def "Byte array is represented as a string with a byte format" () {
+    when:
+      def listProp = property(new ModelRef("Array", new ModelRef("byte")))
+    then:
+      listProp instanceof ByteArrayProperty
+  }
+
+  def "Map is represented as a string with a format" () {
+    when:
+      def mapProp = property(new ModelRef("Map", new ModelRef("string"), true))
+    then:
+      mapProp instanceof MapProperty
+  }
+
   def "Nested collection properties are supported" () {
     when:
       def prop = itemTypeProperty(ref)
@@ -54,7 +93,7 @@ class PropertiesSpec extends Specification {
       "date"      | DateProperty
       "date-time" | DateTimeProperty
       "bigdecimal"| DecimalProperty
-      "biginteger"| DecimalProperty
+      "biginteger"| BaseIntegerProperty
       "uuid"      | UUIDProperty
       "object"    | ObjectProperty
       "byte"      | StringProperty
@@ -67,7 +106,7 @@ class PropertiesSpec extends Specification {
       "DATE"      | DateProperty
       "DATE-time" | DateTimeProperty
       "BIGDECIMAL"| DecimalProperty
-      "BIGINTEGER"| DecimalProperty
+      "BIGINTEGER"| BaseIntegerProperty
       "UUID"      | UUIDProperty
       "OBJECT"    | ObjectProperty
       "BYTE"      | StringProperty

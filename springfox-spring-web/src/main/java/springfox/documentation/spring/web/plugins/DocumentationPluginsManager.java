@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.stereotype.Component;
+import springfox.documentation.service.ApiDescription;
 import springfox.documentation.service.ApiListing;
 import springfox.documentation.service.Operation;
 import springfox.documentation.service.Parameter;
@@ -31,6 +32,7 @@ import springfox.documentation.service.PathDecorator;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.schema.contexts.ModelContext;
 import springfox.documentation.spi.service.ApiListingBuilderPlugin;
+import springfox.documentation.spi.service.ApiListingScannerPlugin;
 import springfox.documentation.spi.service.DefaultsProviderPlugin;
 import springfox.documentation.spi.service.DocumentationPlugin;
 import springfox.documentation.spi.service.ExpandedParameterBuilderPlugin;
@@ -47,7 +49,9 @@ import springfox.documentation.spi.service.contexts.ParameterExpansionContext;
 import springfox.documentation.spi.service.contexts.PathContext;
 import springfox.documentation.spi.service.contexts.RequestMappingContext;
 import springfox.documentation.spring.web.SpringGroupingStrategy;
+import springfox.documentation.spring.web.scanners.ApiListingScanningContext;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -84,6 +88,9 @@ public class DocumentationPluginsManager {
   @Autowired
   @Qualifier("pathDecoratorRegistry")
   private PluginRegistry<PathDecorator, DocumentationContext> pathDecorators;
+  @Autowired
+  @Qualifier("apiListingScannerPluginRegistry")
+  private PluginRegistry<ApiListingScannerPlugin, DocumentationType> apiListingScanners;
 
   public Iterable<DocumentationPlugin> documentationPlugins() throws IllegalStateException {
     List<DocumentationPlugin> plugins = documentationPlugins.getPlugins();
@@ -136,11 +143,12 @@ public class DocumentationPluginsManager {
   }
 
   private DocumentationPlugin defaultDocumentationPlugin() {
-    return new Docket(DocumentationType.SWAGGER_12);
+    return new Docket(DocumentationType.SWAGGER_2);
   }
 
-  public DocumentationContextBuilder createContextBuilder(DocumentationType documentationType,
-                                                          DefaultConfiguration defaultConfiguration) {
+  public DocumentationContextBuilder createContextBuilder(
+      DocumentationType documentationType,
+      DefaultConfiguration defaultConfiguration) {
     return defaultsProviders.getPluginFor(documentationType, defaultConfiguration)
         .create(documentationType)
         .withResourceGroupingStrategy(resourceGroupingStrategy(documentationType));
@@ -153,10 +161,11 @@ public class DocumentationPluginsManager {
         Iterable<Function<String, String>> decorators
             = from(pathDecorators.getPluginsFor(context.documentationContext()))
             .transform(toDecorator(context));
+        String decorated = input;
         for (Function<String, String> decorator : decorators) {
-          input = decorator.apply(input);
+          decorated = decorator.apply(decorated);
         }
-        return input;
+        return decorated;
       }
     };
   }
@@ -168,5 +177,14 @@ public class DocumentationPluginsManager {
         return input.decorator(context);
       }
     };
+  }
+
+  public Collection<ApiDescription> additionalListings(final ApiListingScanningContext context) {
+    final DocumentationType documentationType = context.getDocumentationContext().getDocumentationType();
+    List<ApiDescription> additional = newArrayList();
+    for (ApiListingScannerPlugin each : apiListingScanners.getPluginsFor(documentationType)) {
+      additional.addAll(each.apply(context.getDocumentationContext()));
+    }
+    return additional;
   }
 }

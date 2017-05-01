@@ -23,7 +23,6 @@ import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.classmate.members.ResolvedField;
 import com.fasterxml.classmate.members.ResolvedMethod;
 import com.fasterxml.classmate.members.ResolvedParameterizedMember;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +67,7 @@ import static com.google.common.collect.FluentIterable.*;
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
+import static springfox.documentation.schema.Annotations.*;
 import static springfox.documentation.schema.ResolvedTypes.*;
 import static springfox.documentation.schema.property.BeanPropertyDefinitions.*;
 import static springfox.documentation.schema.property.FactoryMethodProvider.*;
@@ -157,7 +157,7 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
       public List<ModelProperty> apply(ResolvedMethod input) {
         ResolvedType type = paramOrReturnType(typeResolver, input);
         if (!givenContext.canIgnore(type)) {
-          if (shouldUnwrap(input)) {
+          if (memberIsUnwrapped(jacksonProperty.getPrimaryMember())) {
               return propertiesFor(type, fromParent(givenContext, type));
           }
           return newArrayList(beanModelProperty(input, jacksonProperty, givenContext));
@@ -168,10 +168,6 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
   }
 
 
-  private boolean shouldUnwrap(ResolvedMethod input) {
-    return any(newArrayList(input.getRawMember().getDeclaredAnnotations()), ofType(JsonUnwrapped.class));
-  }
-
   private Function<ResolvedField, List<ModelProperty>> propertyFromField(
       final ModelContext givenContext,
       final BeanPropertyDefinition jacksonProperty) {
@@ -179,9 +175,8 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
     return new Function<ResolvedField, List<ModelProperty>>() {
       @Override
       public List<ModelProperty> apply(ResolvedField input) {
-        List<Annotation> annotations = newArrayList(input.getRawMember().getAnnotations());
         if (!givenContext.canIgnore(input.getType())) {
-          if (any(annotations, ofType(JsonUnwrapped.class))) {
+          if (memberIsUnwrapped(jacksonProperty.getField())) {
               return propertiesFor(input.getType(), ModelContext.fromParent(givenContext, input.getType()));
           }
           return newArrayList(fieldModelProperty(input, jacksonProperty, givenContext));
@@ -233,8 +228,10 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
     };
   }
 
-  private Optional<ResolvedField> findField(ResolvedType resolvedType,
-                                            final String fieldName) {
+  private Optional<ResolvedField> findField(
+      ResolvedType resolvedType,
+      final String fieldName) {
+
     return tryFind(fields.in(resolvedType), new Predicate<ResolvedField>() {
       public boolean apply(ResolvedField input) {
         return fieldName.equals(input.getName());
@@ -242,11 +239,18 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
     });
   }
 
-  private ModelProperty fieldModelProperty(ResolvedField childField, BeanPropertyDefinition jacksonProperty,
-                                           ModelContext modelContext) {
+  private ModelProperty fieldModelProperty(
+      ResolvedField childField,
+      BeanPropertyDefinition jacksonProperty,
+      ModelContext modelContext) {
     String fieldName = name(jacksonProperty, modelContext.isReturnType(), namingStrategy);
-    FieldModelProperty fieldModelProperty = new FieldModelProperty(fieldName, childField,
-        modelContext.getAlternateTypeProvider());
+    FieldModelProperty fieldModelProperty
+        = new FieldModelProperty(
+            fieldName,
+            childField,
+            typeResolver,
+            modelContext.getAlternateTypeProvider(),
+            jacksonProperty);
     ModelPropertyBuilder propertyBuilder = new ModelPropertyBuilder()
         .name(fieldModelProperty.getName())
         .type(fieldModelProperty.getType())
@@ -254,7 +258,8 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
         .position(fieldModelProperty.position())
         .required(fieldModelProperty.isRequired())
         .description(fieldModelProperty.propertyDescription())
-        .allowableValues(fieldModelProperty.allowableValues());
+        .allowableValues(fieldModelProperty.allowableValues())
+        .example(fieldModelProperty.example());
     return schemaPluginsManager.property(
         new ModelPropertyContext(propertyBuilder,
             childField.getRawMember(),
@@ -270,7 +275,12 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
 
     String propertyName = name(jacksonProperty, modelContext.isReturnType(), namingStrategy);
     BeanModelProperty beanModelProperty
-        = new BeanModelProperty(propertyName, childProperty, typeResolver, modelContext.getAlternateTypeProvider());
+        = new BeanModelProperty(
+        propertyName,
+        childProperty,
+        typeResolver,
+        modelContext.getAlternateTypeProvider(),
+        jacksonProperty);
 
     LOG.debug("Adding property {} to model", propertyName);
     ModelPropertyBuilder propertyBuilder = new ModelPropertyBuilder()
@@ -281,7 +291,8 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
         .required(beanModelProperty.isRequired())
         .isHidden(false)
         .description(beanModelProperty.propertyDescription())
-        .allowableValues(beanModelProperty.allowableValues());
+        .allowableValues(beanModelProperty.allowableValues())
+        .example(beanModelProperty.example());
     return schemaPluginsManager.property(
         new ModelPropertyContext(propertyBuilder,
             jacksonProperty,
@@ -297,23 +308,26 @@ public class OptimizedModelPropertiesProvider implements ModelPropertiesProvider
       ModelContext modelContext) {
 
     String propertyName = name(jacksonProperty, modelContext.isReturnType(), namingStrategy);
-    ParameterModelProperty beanModelProperty
+    ParameterModelProperty parameterModelProperty
         = new ParameterModelProperty(
             propertyName,
             parameter,
             constructor,
-            modelContext.getAlternateTypeProvider());
+            typeResolver,
+            modelContext.getAlternateTypeProvider(),
+            jacksonProperty);
 
     LOG.debug("Adding property {} to model", propertyName);
     ModelPropertyBuilder propertyBuilder = new ModelPropertyBuilder()
-        .name(beanModelProperty.getName())
-        .type(beanModelProperty.getType())
-        .qualifiedType(beanModelProperty.qualifiedTypeName())
-        .position(beanModelProperty.position())
-        .required(beanModelProperty.isRequired())
+        .name(parameterModelProperty.getName())
+        .type(parameterModelProperty.getType())
+        .qualifiedType(parameterModelProperty.qualifiedTypeName())
+        .position(parameterModelProperty.position())
+        .required(parameterModelProperty.isRequired())
         .isHidden(false)
-        .description(beanModelProperty.propertyDescription())
-        .allowableValues(beanModelProperty.allowableValues());
+        .description(parameterModelProperty.propertyDescription())
+        .allowableValues(parameterModelProperty.allowableValues())
+        .example(parameterModelProperty.example());
     return schemaPluginsManager.property(
         new ModelPropertyContext(propertyBuilder,
             jacksonProperty,

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  *
  *
  */
-
 package springfox.documentation.swagger.readers.operation;
 
 import com.fasterxml.classmate.ResolvedType;
@@ -30,18 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.method.HandlerMethod;
 import springfox.documentation.builders.ResponseMessageBuilder;
 import springfox.documentation.schema.ModelReference;
 import springfox.documentation.schema.TypeNameExtractor;
+import springfox.documentation.service.Header;
 import springfox.documentation.service.ResponseMessage;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.schema.contexts.ModelContext;
 import springfox.documentation.spi.service.OperationBuilderPlugin;
 import springfox.documentation.spi.service.contexts.OperationContext;
-import springfox.documentation.spring.web.readers.operation.HandlerMethodResolver;
 import springfox.documentation.swagger.common.SwaggerPluginSupport;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,9 +69,8 @@ public class SwaggerResponseMessageReader implements OperationBuilderPlugin {
 
   @Override
   public void apply(OperationContext context) {
-    HandlerMethod handlerMethod = context.getHandlerMethod();
     context.operationBuilder()
-        .responseMessages(read(handlerMethod, context));
+        .responseMessages(read(context));
 
   }
 
@@ -81,53 +79,58 @@ public class SwaggerResponseMessageReader implements OperationBuilderPlugin {
     return SwaggerPluginSupport.pluginDoesApply(delimiter);
   }
 
-  protected Set<ResponseMessage> read(HandlerMethod handlerMethod, OperationContext context) {
-    ResolvedType defaultResponse = new HandlerMethodResolver(typeResolver).methodReturnType(handlerMethod);
-    Optional<ApiOperation> operationAnnotation = findApiOperationAnnotation(handlerMethod.getMethod());
+  protected Set<ResponseMessage> read(OperationContext context) {
+    ResolvedType defaultResponse = context.getReturnType();
+    Optional<ApiOperation> operationAnnotation = context.findAnnotation(ApiOperation.class);
     Optional<ResolvedType> operationResponse =
         operationAnnotation.transform(resolvedTypeFromOperation(typeResolver, defaultResponse));
-    Optional<ResponseHeader[]> defaultResponseHeaders = operationAnnotation.transform(resposeHeaders());
-    Map<String, ModelReference> defaultHeaders = newHashMap();
+    Optional<ResponseHeader[]> defaultResponseHeaders = operationAnnotation.transform(responseHeaders());
+    Map<String, Header> defaultHeaders = newHashMap();
     if (defaultResponseHeaders.isPresent()) {
       defaultHeaders.putAll(headers(defaultResponseHeaders.get()));
     }
 
-    Optional<ApiResponses> apiResponses = findApiResponsesAnnotations(handlerMethod.getMethod());
+    List<ApiResponses> allApiResponses = context.findAllAnnotations(ApiResponses.class);
     Set<ResponseMessage> responseMessages = newHashSet();
 
-    if (apiResponses.isPresent()) {
-      ApiResponse[] apiResponseAnnotations = apiResponses.get().value();
+    Map<Integer, ApiResponse> seenResponsesByCode = newHashMap();
+    for (ApiResponses apiResponses : allApiResponses) {
+      ApiResponse[] apiResponseAnnotations = apiResponses.value();
       for (ApiResponse apiResponse : apiResponseAnnotations) {
-        ModelContext modelContext = returnValue(
-            apiResponse.response(),
-            context.getDocumentationType(),
-            context.getAlternateTypeProvider(),
-            context.getGenericsNamingStrategy(),
-            context.getIgnorableParameterTypes());
-        Optional<ModelReference> responseModel = Optional.absent();
-        Optional<ResolvedType> type = resolvedType(null, apiResponse);
-        if (isSuccessful(apiResponse.code())) {
-          type = type.or(operationResponse);
-        }
-        if (type.isPresent()) {
-          responseModel = Optional.of(
-              modelRefFactory(modelContext, typeNameExtractor)
-                  .apply(context.alternateFor(type.get())));
-        }
-        Map<String, ModelReference> headers = newHashMap(defaultHeaders);
-        headers.putAll(headers(apiResponse.responseHeaders()));
+        if (!seenResponsesByCode.containsKey(apiResponse.code())) {
+          seenResponsesByCode.put(apiResponse.code(), apiResponse);
+          ModelContext modelContext = returnValue(
+              context.getGroupName(), apiResponse.response(),
+              context.getDocumentationType(),
+              context.getAlternateTypeProvider(),
+              context.getGenericsNamingStrategy(),
+              context.getIgnorableParameterTypes());
+          Optional<ModelReference> responseModel = Optional.absent();
+          Optional<ResolvedType> type = resolvedType(null, apiResponse);
+          if (isSuccessful(apiResponse.code())) {
+            type = type.or(operationResponse);
+          }
+          if (type.isPresent()) {
+            responseModel = Optional.of(
+                modelRefFactory(modelContext, typeNameExtractor)
+                    .apply(context.alternateFor(type.get())));
+          }
+          Map<String, Header> headers = newHashMap(defaultHeaders);
+          headers.putAll(headers(apiResponse.responseHeaders()));
 
-        responseMessages.add(new ResponseMessageBuilder()
-            .code(apiResponse.code())
-            .message(apiResponse.message())
-            .responseModel(responseModel.orNull())
-            .headers(headers)
-            .build());
+          responseMessages.add(new ResponseMessageBuilder()
+              .code(apiResponse.code())
+              .message(apiResponse.message())
+              .responseModel(responseModel.orNull())
+              .headersWithDescription(headers)
+              .build());
+        }
       }
-
     }
     if (operationResponse.isPresent()) {
-      ModelContext modelContext = returnValue(operationResponse.get(),
+      ModelContext modelContext = returnValue(
+          context.getGroupName(),
+          operationResponse.get(),
           context.getDocumentationType(),
           context.getAlternateTypeProvider(),
           context.getGenericsNamingStrategy(),
@@ -137,8 +140,8 @@ public class SwaggerResponseMessageReader implements OperationBuilderPlugin {
       ModelReference responseModel = modelRefFactory(modelContext, typeNameExtractor).apply(resolvedType);
       context.operationBuilder().responseModel(responseModel);
       ResponseMessage defaultMessage = new ResponseMessageBuilder()
-          .code(httpStatusCode(handlerMethod))
-          .message(message(handlerMethod))
+          .code(httpStatusCode(context))
+          .message(message(context))
           .responseModel(responseModel)
           .build();
       if (!responseMessages.contains(defaultMessage) && !"void".equals(responseModel.getType())) {
@@ -150,7 +153,11 @@ public class SwaggerResponseMessageReader implements OperationBuilderPlugin {
 
 
   static boolean isSuccessful(int code) {
-    return HttpStatus.Series.SUCCESSFUL.equals(HttpStatus.Series.valueOf(code));
+    try {
+      return HttpStatus.Series.SUCCESSFUL.equals(HttpStatus.Series.valueOf(code));
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
   private Optional<ResolvedType> resolvedType(ResolvedType resolvedType, ApiResponse apiResponse) {

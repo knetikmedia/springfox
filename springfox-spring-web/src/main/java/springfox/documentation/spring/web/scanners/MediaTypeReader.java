@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2016 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
 
 package springfox.documentation.spring.web.scanners;
 
-import com.fasterxml.classmate.TypeResolver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
@@ -33,7 +31,6 @@ import springfox.documentation.spi.service.ApiListingBuilderPlugin;
 import springfox.documentation.spi.service.OperationBuilderPlugin;
 import springfox.documentation.spi.service.contexts.ApiListingContext;
 import springfox.documentation.spi.service.contexts.OperationContext;
-import springfox.documentation.spring.web.readers.operation.HandlerMethodResolver;
 
 import java.util.List;
 import java.util.Set;
@@ -45,13 +42,6 @@ import static org.springframework.core.annotation.AnnotationUtils.*;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MediaTypeReader implements OperationBuilderPlugin, ApiListingBuilderPlugin {
-
-  private final TypeResolver typeResolver;
-
-  @Autowired
-  public MediaTypeReader(TypeResolver typeResolver) {
-    this.typeResolver = typeResolver;
-  }
 
   @Override
   public void apply(OperationContext context) {
@@ -90,11 +80,9 @@ public class MediaTypeReader implements OperationBuilderPlugin, ApiListingBuilde
 
   private boolean handlerMethodHasFileParameter(OperationContext context) {
 
-    HandlerMethodResolver handlerMethodResolver = new HandlerMethodResolver(typeResolver);
-    List<ResolvedMethodParameter> methodParameters = handlerMethodResolver.methodParameters(context.getHandlerMethod());
-
+    List<ResolvedMethodParameter> methodParameters = context.getParameters();
     for (ResolvedMethodParameter resolvedMethodParameter : methodParameters) {
-      if (MultipartFile.class.isAssignableFrom(resolvedMethodParameter.getResolvedParameterType().getErasedType())) {
+      if (MultipartFile.class.isAssignableFrom(resolvedMethodParameter.getParameterType().getErasedType())) {
         return true;
       }
     }

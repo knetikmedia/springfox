@@ -24,6 +24,7 @@ import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Ordering;
+import org.springframework.core.OrderComparator;
 import org.springframework.web.bind.annotation.RequestMethod;
 import springfox.documentation.PathProvider;
 import springfox.documentation.RequestHandler;
@@ -37,10 +38,12 @@ import springfox.documentation.service.ResponseMessage;
 import springfox.documentation.service.SecurityScheme;
 import springfox.documentation.service.Tag;
 import springfox.documentation.service.Tags;
+import springfox.documentation.service.VendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.schema.GenericTypeNamingStrategy;
 import springfox.documentation.spi.service.ResourceGroupingStrategy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +67,7 @@ public class DocumentationContextBuilder {
   private final Set<String> consumes = newHashSet();
   private final Set<ResolvedType> additionalModels = newHashSet();
   private final Set<Tag> tags = newTreeSet(Tags.tagNameComparator());
+  private List<VendorExtension> vendorExtensions = new ArrayList<VendorExtension>();
 
   private TypeResolver typeResolver;
   private List<RequestHandler> handlerMappings;
@@ -169,7 +173,7 @@ public class DocumentationContextBuilder {
   }
 
   public DocumentationContextBuilder ruleBuilders(List<Function<TypeResolver, AlternateTypeRule>> ruleBuilders) {
-    rules.addAll(0, from(ruleBuilders)
+    rules.addAll(from(ruleBuilders)
         .transform(evaluator(typeResolver))
         .toList());
     return this;
@@ -246,8 +250,14 @@ public class DocumentationContextBuilder {
     return this;
   }
 
+  public DocumentationContextBuilder vendorExtentions(List<VendorExtension> vendorExtensions) {
+    this.vendorExtensions.addAll(vendorExtensions);
+    return this;
+  }
+
   public DocumentationContext build() {
     Map<RequestMethod, List<ResponseMessage>> responseMessages = aggregateResponseMessages();
+    OrderComparator.sort(rules);
     return new DocumentationContext(documentationType,
         handlerMappings,
         apiInfo,
@@ -272,7 +282,8 @@ public class DocumentationContextBuilder {
         pathMapping,
         isUrlTemplatesEnabled,
         additionalModels,
-        tags);
+        tags,
+        vendorExtensions);
   }
 
   private Function<Function<TypeResolver, AlternateTypeRule>, AlternateTypeRule>

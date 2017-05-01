@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  *
  *
  */
-
 package springfox.documentation.schema
 
 import com.google.common.collect.ImmutableSet
@@ -38,7 +37,7 @@ class UnwrappedTypeSpec extends Specification {
       def namingStrategy = new DefaultGenericTypeNamingStrategy()
     when:
       Model asInput = provider.modelFor(
-          inputParam(
+          inputParam("group",
               UnwrappedTypeForField,
               SWAGGER_12,
               alternateTypeProvider(),
@@ -46,7 +45,7 @@ class UnwrappedTypeSpec extends Specification {
               ImmutableSet.builder().build()))
           .get()
       Model asReturn = provider.modelFor(
-          returnValue(
+          returnValue("group",
               UnwrappedTypeForField,
               SWAGGER_12,
               alternateTypeProvider(),
@@ -87,14 +86,14 @@ class UnwrappedTypeSpec extends Specification {
       def namingStrategy = new DefaultGenericTypeNamingStrategy()
     when:
       Model asInput = provider.modelFor(
-          inputParam(
+          inputParam("group",
               UnwrappedTypeForGetter,
               SWAGGER_12,
               alternateTypeProvider(),
               namingStrategy,
               ImmutableSet.builder().build())).get()
       Model asReturn = provider.modelFor(
-          returnValue(
+          returnValue("group",
               UnwrappedTypeForGetter,
               SWAGGER_12,
               alternateTypeProvider(),
@@ -104,12 +103,12 @@ class UnwrappedTypeSpec extends Specification {
     then:
       asInput.getName() == UnwrappedTypeForGetter.simpleName
       asInput.getProperties().size() == 1
-      asInput.getProperties().containsKey("category")
-      def modelProperty = asInput.getProperties().get("category")
-      modelProperty.type.erasedType == Category
-      modelProperty.getQualifiedType() == "springfox.documentation.schema.Category"
+      asInput.getProperties().containsKey("name")
+      def modelProperty = asInput.getProperties().get("name")
+      modelProperty.type.erasedType == String
+      modelProperty.getQualifiedType() == "java.lang.String"
       def item = modelProperty.getModelRef()
-      item.type == "Category"
+      item.type == "string"
       !item.collection
       item.itemType == null
 
@@ -134,14 +133,14 @@ class UnwrappedTypeSpec extends Specification {
       def namingStrategy = new DefaultGenericTypeNamingStrategy()
     when:
       Model asInput = provider.modelFor(
-          inputParam(
+          inputParam("group",
               UnwrappedTypeForSetter,
               SWAGGER_12,
               alternateTypeProvider(),
               namingStrategy,
               ImmutableSet.builder().build())).get()
       Model asReturn = provider.modelFor(
-          returnValue(
+          returnValue("group",
               UnwrappedTypeForSetter,
               SWAGGER_12,
               alternateTypeProvider(),
@@ -162,12 +161,12 @@ class UnwrappedTypeSpec extends Specification {
 
       asReturn.getName() == UnwrappedTypeForSetter.simpleName
       asReturn.getProperties().size() == 1
-      asReturn.getProperties().containsKey("category")
-      def retModelProperty = asReturn.getProperties().get("category")
-      retModelProperty.type.erasedType == Category
-      retModelProperty.getQualifiedType() == "springfox.documentation.schema.Category"
+      asReturn.getProperties().containsKey("name")
+      def retModelProperty = asReturn.getProperties().get("name")
+      retModelProperty.type.erasedType == String
+      retModelProperty.getQualifiedType() == "java.lang.String"
       def retItem = retModelProperty.getModelRef()
-      retItem.type == "Category"
+      retItem.type == "string"
       !retItem.collection
       retItem.itemType == null
 

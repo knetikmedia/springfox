@@ -5,8 +5,7 @@
     "version": "1.0",
     "title": "Api Documentation",
     "termsOfService": "urn:tos",
-    "contact": {
-    },
+    "contact": {},
     "license": {
       "name": "Apache 2.0",
       "url": "http://www.apache.org/licenses/LICENSE-2.0"
@@ -16,25 +15,29 @@
   "basePath": "/",
   "tags": [
     {
+      "name": "pet-store-resource",
+      "description": "Operations about store"
+    },
+    {
       "name": "pet-controller",
       "description": "Operations about pets"
     },
     {
-      "name": "pet-store-resource",
-      "description": "Operations about store"
+      "name": "generic-pet-controller",
+      "description": "Generic Pet Controller"
     },
     {
       "name": "user-controller",
       "description": "Operations about user"
     }
   ],
-  "produces": [
-    "application/xml",
-    "application/json"
-  ],
   "schemes": [
     "http",
     "https"
+  ],
+  "produces": [
+    "application/xml",
+    "application/json"
   ],
   "paths": {
     "/api/pet": {
@@ -63,14 +66,14 @@
           }
         ],
         "responses": {
-          "405": {
-            "description": "Invalid input"
-          },
           "200": {
             "description": "OK",
             "schema": {
               "type": "string"
             }
+          },
+          "405": {
+            "description": "Invalid input"
           }
         },
         "security": [
@@ -107,12 +110,6 @@
           }
         ],
         "responses": {
-          "405": {
-            "description": "Validation exception"
-          },
-          "404": {
-            "description": "Pet not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -121,6 +118,12 @@
           },
           "400": {
             "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Pet not found"
+          },
+          "405": {
+            "description": "Validation exception"
           }
         },
         "security": [
@@ -258,14 +261,11 @@
             "description": "ID of pet that needs to be fetched",
             "required": true,
             "type": "string",
-            "maximum": 5.0,
-            "minimum": 1.0
+            "maximum": 5,
+            "minimum": 1
           }
         ],
         "responses": {
-          "404": {
-            "description": "Pet not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -273,7 +273,32 @@
             }
           },
           "400": {
-            "description": "Invalid ID supplied"
+            "description": "Invalid ID supplied",
+            "headers": {
+              "header1": {
+                "type": "string"
+              },
+              "header2": {
+                "type": "string"
+              },
+              "header3": {
+                "type": "string"
+              },
+              "header4": {
+                "type": "string"
+              }
+            }
+          },
+          "404": {
+            "description": "Pet not found",
+            "headers": {
+              "header3": {
+                "type": "string"
+              },
+              "header4": {
+                "type": "string"
+              }
+            }
           }
         },
         "security": [
@@ -305,13 +330,44 @@
         ],
         "parameters": [
           {
-            "in": "body",
-            "name": "order",
-            "description": "order placed for purchasing the pet",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Order"
-            }
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "petId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "shipDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "complete",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
@@ -349,14 +405,11 @@
             "description": "ID of pet that needs to be fetched",
             "required": true,
             "type": "string",
-            "maximum": 5.0,
-            "minimum": 1.0
+            "maximum": 5,
+            "minimum": 1
           }
         ],
         "responses": {
-          "404": {
-            "description": "Order not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -365,6 +418,9 @@
           },
           "400": {
             "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Order not found"
           }
         }
       },
@@ -389,13 +445,10 @@
             "description": "ID of the order that needs to be deleted",
             "required": true,
             "type": "string",
-            "minimum": 1.0
+            "minimum": 1
           }
         ],
         "responses": {
-          "404": {
-            "description": "Order not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -404,6 +457,9 @@
           },
           "400": {
             "description": "Invalid ID supplied"
+          },
+          "404": {
+            "description": "Order not found"
           }
         }
       }
@@ -611,9 +667,6 @@
           }
         ],
         "responses": {
-          "404": {
-            "description": "User not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -622,6 +675,9 @@
           },
           "400": {
             "description": "Invalid username supplied"
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       },
@@ -648,19 +704,57 @@
             "type": "string"
           },
           {
-            "in": "body",
-            "name": "user",
-            "description": "Updated user object",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/User"
-            }
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "firstName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lastName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "phone",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "userStatus",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "responses": {
-          "404": {
-            "description": "User not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -669,6 +763,9 @@
           },
           "400": {
             "description": "Invalid user supplied"
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       },
@@ -696,9 +793,6 @@
           }
         ],
         "responses": {
-          "404": {
-            "description": "User not found"
-          },
           "200": {
             "description": "OK",
             "schema": {
@@ -707,12 +801,44 @@
           },
           "400": {
             "description": "Invalid username supplied"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/generic/pets/test": {
+      "post": {
+        "tags": [
+          "generic-pet-controller"
+        ],
+        "summary": "test",
+        "operationId": "testUsingPOST_1",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Pet"
+            }
           }
         }
       }
     }
   },
   "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
     "petstore_auth": {
       "type": "oauth2",
       "authorizationUrl": "http://petstore.swagger.io/api/oauth/dialog",
@@ -721,55 +847,14 @@
         "write:pets": "modify pets in your account",
         "read:pets": "read your pets"
       }
-    },
-    "api_key": {
-      "type": "apiKey",
-      "name": "api_key",
-      "in": "header"
     }
   },
   "definitions": {
-    "User": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "identifier": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "phone": {
-          "type": "string"
-        },
-        "userStatus": {
-          "type": "integer",
-          "format": "int32",
-          "description": "User Status"
-        },
-        "username": {
-          "type": "string"
-        }
-      }
-    },
     "Category": {
-      "required": [
-        "id",
-        "name"
-      ],
       "type": "object",
+      "required": [
+        "id"
+      ],
       "properties": {
         "id": {
           "type": "integer",
@@ -777,6 +862,43 @@
         },
         "name": {
           "type": "string"
+        }
+      }
+    },
+    "Order": {
+      "type": "object",
+      "properties": {
+        "complete": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "identifier": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "petId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "shipDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Order Status",
+          "enum": [
+            "placed",
+            "approved",
+            "delivered"
+          ]
         }
       }
     },
@@ -832,40 +954,38 @@
         }
       }
     },
-    "Order": {
+    "User": {
       "type": "object",
       "properties": {
-        "complete": {
-          "type": "boolean"
+        "email": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
         },
         "id": {
           "type": "integer",
           "format": "int64"
         },
         "identifier": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "userStatus": {
           "type": "integer",
-          "format": "int64"
+          "format": "int32",
+          "description": "User Status"
         },
-        "petId": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "quantity": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "shipDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "Order Status",
-          "enum": [
-            "placed",
-            "approved",
-            "delivered"
-          ]
+        "username": {
+          "type": "string"
         }
       }
     }

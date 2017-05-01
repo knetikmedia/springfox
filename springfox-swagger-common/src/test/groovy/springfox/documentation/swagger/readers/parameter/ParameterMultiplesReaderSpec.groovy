@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ package springfox.documentation.swagger.readers.parameter
 
 import com.fasterxml.classmate.ResolvedType
 import com.fasterxml.classmate.TypeResolver
-import com.google.common.base.Optional
 import io.swagger.annotations.ApiParam
 import org.springframework.core.MethodParameter
+import org.springframework.mock.env.MockEnvironment
 import spock.lang.Unroll
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
 import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.dummy.DummyClass
 import springfox.documentation.spring.web.mixins.ModelProviderForServiceSupport
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
@@ -37,6 +38,7 @@ import springfox.documentation.spring.web.plugins.DocumentationContextSpec
 
 @Mixin([RequestMappingSupport, ModelProviderForServiceSupport])
 class ParameterMultiplesReaderSpec extends DocumentationContextSpec implements ApiParamAnnotationSupport {
+  def descriptions = new DescriptionResolver(new MockEnvironment())
   @Unroll
   def "param multiples for swagger reader"() {
     given:
@@ -44,7 +46,7 @@ class ParameterMultiplesReaderSpec extends DocumentationContextSpec implements A
       methodParameter.getParameterAnnotation(ApiParam.class) >> apiParamAnnotation
       methodParameter.getParameterType() >> paramType
       ResolvedType resolvedType = paramType != null ? new TypeResolver().resolve(paramType) : null
-      ResolvedMethodParameter resolvedMethodParameter = new ResolvedMethodParameter(methodParameter, resolvedType)
+      ResolvedMethodParameter resolvedMethodParameter = new ResolvedMethodParameter("", methodParameter, resolvedType)
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
       ParameterContext parameterContext = new ParameterContext(resolvedMethodParameter, new ParameterBuilder(),
           context(), genericNamingStrategy, Mock(OperationContext))
@@ -69,11 +71,7 @@ class ParameterMultiplesReaderSpec extends DocumentationContextSpec implements A
   }
 
   def stubbedParamBuilder(ApiParam apiParamAnnotation) {
-    new ApiParamParameterBuilder() {
-      @Override
-      def Optional<ApiParam> findApiParam(MethodParameter methodParameter) {
-        Optional.fromNullable(apiParamAnnotation)
-      }
+    new ApiParamParameterBuilder(descriptions) {
     }
   }
 }

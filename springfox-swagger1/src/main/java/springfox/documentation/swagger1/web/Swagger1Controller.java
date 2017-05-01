@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import springfox.documentation.annotations.ApiIgnore;
 import springfox.documentation.service.Documentation;
 import springfox.documentation.spring.web.DocumentationCache;
+import springfox.documentation.spring.web.PropertySourcedMapping;
 import springfox.documentation.spring.web.json.Json;
 import springfox.documentation.spring.web.json.JsonSerializer;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -50,31 +51,43 @@ import static springfox.documentation.swagger1.web.ApiListingMerger.*;
 
 @Controller
 @ApiIgnore
-@RequestMapping("${springfox.documentation.swagger.v1.path:/api-docs}")
 public class Swagger1Controller {
 
-  @Autowired
-  private DocumentationCache documentationCache;
+  private final DocumentationCache documentationCache;
+  private final ServiceModelToSwaggerMapper mapper;
+  private final JsonSerializer jsonSerializer;
 
   @Autowired
-  private ServiceModelToSwaggerMapper mapper;
+  public Swagger1Controller(
+      DocumentationCache documentationCache,
+      ServiceModelToSwaggerMapper mapper,
+      JsonSerializer jsonSerializer) {
 
-  @Autowired
-  private JsonSerializer jsonSerializer;
+    this.documentationCache = documentationCache;
+    this.mapper = mapper;
+    this.jsonSerializer = jsonSerializer;
+  }
 
-  @ApiIgnore
-  @RequestMapping(method = RequestMethod.GET)
-  public
+  @RequestMapping(value = "/api-docs", method = RequestMethod.GET)
+  @PropertySourcedMapping(
+      value = "${springfox.documentation.swagger.v1.path}",
+      propertyKey = "springfox.documentation.swagger.v1.path")
   @ResponseBody
-  ResponseEntity<Json> getResourceListing(@RequestParam(value = "group", required = false) String swaggerGroup) {
+  public ResponseEntity<Json> getResourceListing(
+      @RequestParam(value = "group", required = false) String swaggerGroup) {
+
     return getSwaggerResourceListing(swaggerGroup);
   }
 
-  @ApiIgnore
-  @RequestMapping(value = { "/{swaggerGroup}/{apiDeclaration}" }, method = RequestMethod.GET)
-  public
+  @RequestMapping(value = "/api-docs/{swaggerGroup}/{apiDeclaration}", method = RequestMethod.GET)
+  @PropertySourcedMapping(
+      value = "${springfox.documentation.swagger.v1.path}/{swaggerGroup}/{apiDeclaration}",
+      propertyKey = "springfox.documentation.swagger.v1.path")
   @ResponseBody
-  ResponseEntity<Json> getApiListing(@PathVariable String swaggerGroup, @PathVariable String apiDeclaration) {
+  public ResponseEntity<Json> getApiListing(
+      @PathVariable String swaggerGroup,
+      @PathVariable String apiDeclaration) {
+
     return getSwaggerApiListing(swaggerGroup, apiDeclaration);
   }
 

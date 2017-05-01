@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import springfox.documentation.service.ApiListingReference;
 import springfox.documentation.service.Documentation;
 import springfox.documentation.service.PathAdjuster;
 import springfox.documentation.service.ResourceListing;
+import springfox.documentation.service.Tag;
 import springfox.documentation.spi.service.contexts.DocumentationContext;
 import springfox.documentation.spring.web.paths.PathMappingAdjuster;
 
@@ -67,6 +68,8 @@ public class ApiDocumentationScanner {
         result.getResourceGroupRequestMappings());
 
     Multimap<String, ApiListing> apiListings = apiListingScanner.scan(listingContext);
+    Set<Tag> tags = toTags(apiListings);
+    tags.addAll(context.getTags());
     DocumentationBuilder group = new DocumentationBuilder()
         .name(context.getGroupName())
         .apiListingsByResourceGroupName(apiListings)
@@ -75,7 +78,8 @@ public class ApiDocumentationScanner {
         .host(context.getHost())
         .schemes(context.getProtocols())
         .basePath(context.getPathProvider().getApplicationBasePath())
-        .tags(toTags(apiListings));
+        .extensions(context.getVendorExtentions())
+        .tags(tags);
 
     Set<ApiListingReference> apiReferenceSet = newTreeSet(listingReferencePathComparator());
     apiReferenceSet.addAll(apiListingReferences(apiListings, context));
@@ -90,8 +94,9 @@ public class ApiDocumentationScanner {
     return group.build();
   }
 
-  private Collection<? extends ApiListingReference> apiListingReferences(Multimap<String, ApiListing> apiListings,
-                                                                         DocumentationContext context) {
+  private Collection<? extends ApiListingReference> apiListingReferences(
+      Multimap<String, ApiListing> apiListings,
+      DocumentationContext context) {
     Map<String, Collection<ApiListing>> grouped = Multimaps.asMap(apiListings);
     return FluentIterable.from(grouped.entrySet()).transform(toApiListingReference(context)).toSet();
   }

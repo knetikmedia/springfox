@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015-2016 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  *
  *
  */
-
 package springfox.documentation.spi.service.contexts;
 
 import com.fasterxml.classmate.ResolvedType;
@@ -35,11 +34,13 @@ public class ParameterContext {
   private final GenericTypeNamingStrategy genericNamingStrategy;
   private final OperationContext operationContext;
 
-  public ParameterContext(ResolvedMethodParameter resolvedMethodParameter,
-                          ParameterBuilder parameterBuilder,
-                          DocumentationContext documentationContext,
-                          GenericTypeNamingStrategy genericNamingStrategy,
-                          OperationContext operationContext) {
+  public ParameterContext(
+      ResolvedMethodParameter resolvedMethodParameter,
+      ParameterBuilder parameterBuilder,
+      DocumentationContext documentationContext,
+      GenericTypeNamingStrategy genericNamingStrategy,
+      OperationContext operationContext) {
+
     this.parameterBuilder = parameterBuilder;
     this.resolvedMethodParameter = resolvedMethodParameter;
     this.documentationContext = documentationContext;
@@ -51,8 +52,14 @@ public class ParameterContext {
     return resolvedMethodParameter;
   }
 
+  /**
+   * @return
+   * @since 2.5.0 this has been deprecated
+   * @deprecated Use {@link ParameterContext#resolvedMethodParameter()} instead
+   */
+  @Deprecated
   public MethodParameter methodParameter() {
-    return resolvedMethodParameter.getMethodParameter();
+    throw new UnsupportedOperationException("Please use resolvedMethodParameter instead");
   }
 
   public ParameterBuilder parameterBuilder() {
@@ -85,5 +92,9 @@ public class ParameterContext {
 
   public ImmutableSet<Class> getIgnorableParameterTypes() {
     return documentationContext.getIgnorableParameterTypes();
+  }
+
+  public String getGroupName() {
+    return operationContext.getGroupName();
   }
 }

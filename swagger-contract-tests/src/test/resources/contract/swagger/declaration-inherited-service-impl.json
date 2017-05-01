@@ -1,15 +1,55 @@
 {
   "apiVersion": "1.0",
-  "swaggerVersion": "1.2",
-  "basePath": "/",
-  "resourcePath": "/child/child-method",
-  "produces": [
-  ],
-  "consumes": [
-  ],
   "apis": [
     {
-      "path": "/child/child-method",
+      "description": "demonstrateInheritanceWithAnnotations",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "demonstrateInheritanceWithAnnotations",
+          "nickname": "demonstrateInheritanceWithAnnotationsUsingGET",
+          "produces": [
+            "application/json"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "param1",
+              "name": "param1",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "kkj",
+              "responseModel": "Pet"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "Pet"
+        }
+      ],
+      "path": "/child/1575"
+    },
+    {
       "description": "getSomething",
       "operations": [
         {
@@ -26,8 +66,8 @@
             {
               "allowMultiple": false,
               "description": "parameter",
-              "name": "body",
-              "paramType": "body",
+              "name": "parameter",
+              "paramType": "query",
               "type": "string",
               "required": false
             }
@@ -54,7 +94,34 @@
           "deprecated": "false",
           "type": "string"
         }
-      ]
+      ],
+      "path": "/child/child-method"
     }
-  ]
+  ],
+  "basePath": "/",
+  "consumes": [],
+  "models": {
+    "Pet": {
+      "description": "",
+      "id": "Pet",
+      "properties": {
+        "age": {
+          "required": false,
+          "format": "int32",
+          "type": "integer"
+        },
+        "id": {
+          "required": false,
+          "type": "string"
+        },
+        "name": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    }
+  },
+  "produces": [],
+  "resourcePath": "/child",
+  "swaggerVersion": "1.2"
 }

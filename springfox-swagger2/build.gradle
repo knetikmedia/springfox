@@ -1,12 +1,12 @@
 plugins {
-  id "net.ltgt.apt" version "0.6"
+  id "net.ltgt.apt" version "0.9"
 }
 
 ext {
   limits = [
       'instruction': 95,
       'branch'     : 89,
-      'line'       : 95.5,
+      'line'       : 95,
       'complexity' : 90,
       'method'     : 95,
       'class'      : 100
@@ -25,8 +25,8 @@ dependencies {
   provided libs.springProvided
   provided libs.clientProvided
 
-  compile 'org.mapstruct:mapstruct:1.0.0.Final'
-  apt 'org.mapstruct:mapstruct-processor:1.0.0.Final'
+  compile "org.mapstruct:mapstruct:$mapstruct"
+  apt "org.mapstruct:mapstruct-processor:$mapstruct"
 
   testCompile project(':springfox-core')
   testCompile project(':springfox-core').sourceSets.test.output

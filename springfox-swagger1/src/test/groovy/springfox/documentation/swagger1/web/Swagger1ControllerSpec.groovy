@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,15 +18,10 @@
  */
 
 package springfox.documentation.swagger1.web
-import com.fasterxml.jackson.databind.ObjectMapper
+
 import com.google.common.collect.LinkedListMultimap
 import com.google.common.collect.Multimap
-import org.springframework.http.MediaType
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.MvcResult
-import org.springframework.web.servlet.View
-import spock.lang.Shared
+import org.springframework.http.HttpStatus
 import spock.lang.Unroll
 import springfox.documentation.builders.DocumentationBuilder
 import springfox.documentation.service.ApiListing
@@ -46,62 +41,41 @@ import springfox.documentation.swagger1.configuration.SwaggerJacksonModule
 import springfox.documentation.swagger1.mixins.MapperSupport
 
 import static com.google.common.collect.Maps.*
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.*
 
-@Mixin([JsonSupport, ApiListingSupport, AuthSupport, MapperSupport])
-class Swagger1ControllerSpec extends DocumentationContextSpec {
+@Mixin([ApiListingSupport, AuthSupport])
+class Swagger1ControllerSpec extends DocumentationContextSpec
+    implements MapperSupport, JsonSupport {
 
-  @Shared
-  MockMvc mockMvc
-  @Shared
-  View mockView
-  @Shared
-  Swagger1Controller controller = new Swagger1Controller()
+  Swagger1Controller sut =  new Swagger1Controller(
+          new DocumentationCache(),
+          serviceMapper(),
+          new JsonSerializer([new SwaggerJacksonModule()]))
+
+
   ApiListingReferenceScanner listingReferenceScanner
   ApiListingScanner listingScanner
 
   def setup() {
-    controller.documentationCache = new DocumentationCache()
-
-    controller.jsonSerializer = new JsonSerializer([new SwaggerJacksonModule()])
     listingReferenceScanner = Mock(ApiListingReferenceScanner)
     listingScanner = Mock(ApiListingScanner)
     listingReferenceScanner.scan(_) >> new ApiListingReferenceScanResult(newHashMap())
     listingScanner.scan(_) >> LinkedListMultimap.create()
-    controller.mapper = serviceMapper()
-    def jackson2 = new MappingJackson2HttpMessageConverter()
-    jackson2.setSupportedMediaTypes([MediaType.ALL, MediaType.APPLICATION_JSON])
-
-    def mapper = new ObjectMapper()
-
-    jackson2.setObjectMapper(mapper)
-    mockMvc = standaloneSetup(controller)
-            .setSingleView(mockView)
-            .setMessageConverters(jackson2)
-            .build();
   }
 
-  @Unroll("path: #path")
-  def "should return the default or first swagger resource listing"() {
+  @Unroll
+  def "should return #expectedStatus.value() for #group"() {
     given:
-      ApiDocumentationScanner sut = new ApiDocumentationScanner(listingReferenceScanner, listingScanner)
-      controller.documentationCache.addDocumentation(sut.scan(context()))
+      ApiDocumentationScanner scanner = new ApiDocumentationScanner(listingReferenceScanner, listingScanner)
+      sut.documentationCache.addDocumentation(scanner.scan(context()))
     when:
-      MvcResult result = mockMvc
-              .perform(get(path))
-              .andDo(print())
-              .andReturn()
-
-      jsonBodyResponse(result)
+      def result = sut.getResourceListing(group)
     then:
-      result.getResponse().getStatus() == expectedStatus
+      result.getStatusCode() == expectedStatus
     where:
-      path                      | expectedStatus
-      "/api-docs"               | 200
-      "/api-docs?group=default" | 200
-      "/api-docs?group=unknown" | 404
+      group     | expectedStatus
+      null      | HttpStatus.OK
+      "default" | HttpStatus.OK
+      "unknown" | HttpStatus.NOT_FOUND
   }
 
   def "should respond with api listing for a given resource group"() {
@@ -113,31 +87,27 @@ class Swagger1ControllerSpec extends DocumentationContextSpec {
               .name("groupName")
               .apiListingsByResourceGroupName(listings)
               .build()
-      controller.documentationCache.addDocumentation(group)
+      sut.documentationCache.addDocumentation(group)
     when:
-      MvcResult result = mockMvc.perform(get("/api-docs/groupName/businesses")).andDo(print()).andReturn()
-      jsonBodyResponse(result)
-
+      def result = sut.getApiListing("groupName", "businesses")
     then:
-      result.getResponse().getStatus() == 200
+      result.getStatusCode() == HttpStatus.OK 
   }
 
   def "should respond with auth included"() {
     given:
       def authTypes = new ArrayList<SecurityScheme>()
-      authTypes.add(authorizationTypes());
+      authTypes.add(authorizationTypes())
       Documentation group = new DocumentationBuilder()
               .name("groupName")
               .resourceListing(resourceListing(authTypes))
               .build()
 
-      controller.documentationCache.addDocumentation(group)
+      sut.documentationCache.addDocumentation(group)
     when:
-      MvcResult result = mockMvc.perform(get("/api-docs?group=groupName")).andDo(print()).andReturn()
-      def json = jsonBodyResponse(result)
-
+      def result = sut.getResourceListing("groupName")
     then:
-      result.getResponse().getStatus() == 200
-      assertDefaultAuth(json)
+      result.getStatusCode() == HttpStatus.OK
+      assertDefaultAuth(jsonBodyResponse(result.getBody().value()))
   }
 }

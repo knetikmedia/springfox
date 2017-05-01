@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@
 
 package springfox.documentation.swagger.readers.parameter
 
-import com.google.common.base.Optional
+import com.fasterxml.classmate.TypeResolver
 import io.swagger.annotations.ApiParam
-import org.springframework.core.MethodParameter
+import org.springframework.mock.env.MockEnvironment
 import spock.lang.Unroll
 import springfox.documentation.builders.ParameterBuilder
 import springfox.documentation.schema.DefaultGenericTypeNamingStrategy
@@ -29,21 +29,21 @@ import springfox.documentation.service.ResolvedMethodParameter
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spi.service.contexts.OperationContext
 import springfox.documentation.spi.service.contexts.ParameterContext
+import springfox.documentation.spring.web.DescriptionResolver
 import springfox.documentation.spring.web.mixins.ModelProviderForServiceSupport
 import springfox.documentation.spring.web.mixins.RequestMappingSupport
 import springfox.documentation.spring.web.plugins.DocumentationContextSpec
 
 @Mixin([RequestMappingSupport, ModelProviderForServiceSupport])
 class ParameterReaderSpec extends DocumentationContextSpec implements ApiParamAnnotationSupport {
+  def descriptions = new DescriptionResolver(new MockEnvironment())
+
   @Unroll("property #resultProperty expected: #expected")
   def "should set basic properties based on ApiParam annotation or a sensible default"() {
     given:
-      MethodParameter methodParameter = Mock(MethodParameter)
-      methodParameter.getParameterAnnotation(ApiParam.class) >> apiParamAnnotation
-      methodParameter.parameterName >> "someName"
-      methodParameter.parameterType >> Object
-      def resolvedMethodParameter = Mock(ResolvedMethodParameter)
-      resolvedMethodParameter.methodParameter >> methodParameter
+      def nonNullAnnotations = [apiParamAnnotation, reqParamAnnot].findAll { it != null }
+      def resolvedMethodParameter =
+          new ResolvedMethodParameter(0, "default", nonNullAnnotations, new TypeResolver().resolve(Object.class))
       def genericNamingStrategy = new DefaultGenericTypeNamingStrategy()
       ParameterContext parameterContext = new ParameterContext(resolvedMethodParameter, new ParameterBuilder(),
           context(), genericNamingStrategy, Mock(OperationContext))
@@ -67,11 +67,7 @@ class ParameterReaderSpec extends DocumentationContextSpec implements ApiParamAn
   }
 
   def stubbedParamBuilder(ApiParam apiParamAnnotation) {
-    new ApiParamParameterBuilder() {
-      @Override
-      def Optional<ApiParam> findApiParam(MethodParameter methodParameter) {
-        Optional.fromNullable(apiParamAnnotation)
-      }
+    new ApiParamParameterBuilder(descriptions) {
     }
   }
 }

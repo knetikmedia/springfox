@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2018 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,33 +16,36 @@
  *
  *
  */
-
 package springfox.documentation.swagger2.mappers;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.auth.SecuritySchemeDefinition;
 import org.mapstruct.Mapper;
-import springfox.documentation.service.SecurityScheme;
 import springfox.documentation.service.ResourceListing;
+import springfox.documentation.service.SecurityScheme;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import static com.google.common.collect.Maps.*;
 
 @Mapper
 public class SecurityMapper {
   private Map<String, SecuritySchemeFactory> factories = ImmutableMap.<String, SecuritySchemeFactory>builder()
-          .put("oauth2", new OAuth2AuthFactory())
-          .put("apiKey", new ApiKeyAuthFactory())
-          .put("basicAuth", new BasicAuthFactory())
-          .build();
+      .put("oauth2", new OAuth2AuthFactory())
+      .put("apiKey", new ApiKeyAuthFactory())
+      .put("basicAuth", new BasicAuthFactory())
+      .build();
 
   public Map<String, SecuritySchemeDefinition> toSecuritySchemeDefinitions(ResourceListing from) {
     if (from == null) {
       return newHashMap();
     }
-    return transformValues(uniqueIndex(from.getSecuritySchemes(), schemeName()), toSecuritySchemeDefinition());
+    TreeMap<String, SecuritySchemeDefinition> result = newTreeMap();
+    result.putAll(transformValues(uniqueIndex(from.getSecuritySchemes(), schemeName()),
+        toSecuritySchemeDefinition()));
+    return result;
   }
 
   private Function<SecurityScheme, String> schemeName() {
@@ -62,5 +65,4 @@ public class SecurityMapper {
       }
     };
   }
-
 }

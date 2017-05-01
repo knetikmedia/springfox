@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2015 the original author or authors.
+ *  Copyright 2015-2017 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import springfox.documentation.service.AllowableListValues;
 import springfox.documentation.service.AllowableRangeValues;
 import springfox.documentation.service.AllowableValues;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.google.common.base.Optional.*;
@@ -55,15 +56,19 @@ public class EnumMapper {
       toReturn.setEnum(((AllowableListValues) allowableValues).getValues());
     }
     if (allowableValues instanceof AllowableRangeValues) {
-      toReturn.setMinimum(safeDouble(((AllowableRangeValues) allowableValues).getMin()));
-      toReturn.setMaximum(safeDouble(((AllowableRangeValues) allowableValues).getMax()));
+      AllowableRangeValues range = (AllowableRangeValues) allowableValues;
+      toReturn.setMinimum(safeBigDecimal(range.getMin()));
+      toReturn.setMaximum(safeBigDecimal(range.getMax()));
     }
     return toReturn;
   }
 
-  static Double safeDouble(String doubleString) {
+  static BigDecimal safeBigDecimal(String doubleString) {
+    if (doubleString == null){
+      return null;
+    }
     try {
-      return Double.valueOf(doubleString);
+      return new BigDecimal(doubleString);
     } catch (NumberFormatException e) {
       return null;
     }
@@ -97,8 +102,8 @@ public class EnumMapper {
       if (property instanceof AbstractNumericProperty) {
         AbstractNumericProperty numeric = (AbstractNumericProperty) property;
         AllowableRangeValues range = (AllowableRangeValues) allowableValues;
-        numeric.setMaximum(safeDouble(range.getMax()));
-        numeric.setMinimum(safeDouble(range.getMin()));
+        numeric.setMaximum(safeBigDecimal(range.getMax()));
+        numeric.setMinimum(safeBigDecimal(range.getMin()));
       }
     }
     return property;
