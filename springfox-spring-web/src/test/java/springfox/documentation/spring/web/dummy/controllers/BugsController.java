@@ -19,6 +19,7 @@
 package springfox.documentation.spring.web.dummy.controllers;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiModel;
@@ -28,17 +29,22 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.spring.web.dummy.models.Bug1749;
+import springfox.documentation.spring.web.dummy.models.EnumType;
 import springfox.documentation.spring.web.dummy.models.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -48,6 +54,7 @@ import java.util.Map;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+@Api(tags = "Bugs")
 @RestController
 @RequestMapping("/bugs")
 public class BugsController {
@@ -208,6 +215,52 @@ public class BugsController {
     throw new UnsupportedOperationException();
   }
 
+  @RequestMapping(value = "/1819a", method = PUT)
+  public void modelWithListOfEnumsAsJson(@RequestBody Model1819 model) {
+  }
+
+  @RequestMapping(value = "/1819b", method = POST)
+  public void modelWithListOfEnumsAsModelAttribute(@ModelAttribute Model1819 model) {
+  }
+
+  @GetMapping("/1864")
+  public void test(@Valid Model1864 req) {
+
+  }
+
+  @GetMapping(value = "/1841", produces = MediaType.APPLICATION_ATOM_XML_VALUE)
+  public void method1() {
+  }
+
+  @GetMapping(value = "/1841", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  public void method2() {
+  }
+
+  public class Model1864 {
+    @NotNull
+    private String somename;
+
+    public String getSomename() {
+      return somename;
+    }
+
+    public void setSomename(String somename) {
+      this.somename = somename;
+    }
+  }
+
+  public class Model1819 {
+
+    private List<EnumType> enumTypes;
+
+    public List<EnumType> getEnumTypes() {
+      return enumTypes;
+    }
+
+    public void setEnumTypes(List<EnumType> enumTypes) {
+      this.enumTypes = enumTypes;
+    }
+  }
 
   class TestClass {
 

@@ -93,7 +93,7 @@ include::../../springfox-spring-config/src/main/java/springfox/springconfig/Vers
 <2> Check if the https://github.com/springfox/springfox/blob/master/springfox-spring-config/src/main/java/springfox/springconfig/VersionApi.java[VersionApi]
 is applied to the parameter.
 <3> Build the parameter with the necessary information using the builder methods.
-<4> Return true if we want this plugin to apply to all documenation types.
+<4> Return true if we want this plugin to apply to all documentation types.
 
 ==== Example ApiListingScannerPlugin
 
@@ -108,7 +108,7 @@ include::../../swagger-contract-tests/src/main/java/springfox/test/contract/swag
 <1> Add a list of custom ``ApiDescription``s
 <2> Add a list of ``Operation``s for each description
 <3> NOTE: the code generated names are not guaranteed to be unique. For these custom endpoints it is the
-resposibility of the service author to ensure.
+responsibility of the service author to ensure.
 <4> NOTE: It is important to also ensure we pass in a model reference even for primitive types
 
 == Additional extensibility options
@@ -124,3 +124,27 @@ resposibility of the service author to ensure.
 
 NOTE: This has a shortcoming currently in that, currently the response still hides one of the response
 representations. This is a limitation of the OAI Spec 2.0
+
+== Spring Data Rest extensibility
+
+NOTE: These are incubating features and may change.
+
+.Spring Data REST Extensibility
+|====
+|Name| Description | Since
+| `EntityOperationsExtractor`
+| This is an extensibility point to extract entity specific operations. This extractor is to allow creation of
+`RequestHandler`s that are based on Spring-Data-Rest(SDR) endpoints. The SDR configuration information is available
+via `EntityAssociationContext` and can be used to infer the properties needed
+to produce the operation descriptions.
+| 2.7.0
+| `EntityAssociationOperationsExtractor`
+| This is an extensibility point to extract operations related to entity associations. This extractor is to allow
+creation of `RequestHandler`s that are based on Spring-Data-Rest(SDR). The SDR configuration information is available
+via `EntityContext` and can be used to infer the properties needed to produce the operation descriptions.
+| 2.7.0
+| `RequestHandlerExtractorConfiguration`
+| Additionally the glue that makes all this possible is the `RequestHandlerExtractorConfiguration`. When not
+customized, the library uses the `DefaultExtractorConfiguration`.
+| 2.7.0
+|====

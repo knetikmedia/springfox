@@ -479,54 +479,6 @@
       "path": "/features/1490/entity/{itemId}"
     },
     {
-      "description": "serializablePet",
-      "operations": [
-        {
-          "method": "GET",
-          "summary": "serializablePet",
-          "nickname": "serializablePetUsingGET",
-          "produces": [
-            "*/*"
-          ],
-          "consumes": [
-            "application/json"
-          ],
-          "parameters": [
-            {
-              "allowMultiple": false,
-              "description": "itemId",
-              "name": "itemId",
-              "paramType": "path",
-              "type": "string",
-              "required": true
-            }
-          ],
-          "responseMessages": [
-            {
-              "code": 200,
-              "message": "OK",
-              "responseModel": "Pet"
-            },
-            {
-              "code": 401,
-              "message": "Unauthorized"
-            },
-            {
-              "code": 403,
-              "message": "Forbidden"
-            },
-            {
-              "code": 404,
-              "message": "Not Found"
-            }
-          ],
-          "deprecated": "false",
-          "type": "Pet"
-        }
-      ],
-      "path": "/features/1490/{itemId}"
-    },
-    {
       "description": "updateSerializablePet",
       "operations": [
         {
@@ -581,6 +533,54 @@
           ],
           "deprecated": "false",
           "type": "void"
+        }
+      ],
+      "path": "/features/1490/{itemId}"
+    },
+    {
+      "description": "serializablePet",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "serializablePet",
+          "nickname": "serializablePetUsingGET",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "allowMultiple": false,
+              "description": "itemId",
+              "name": "itemId",
+              "paramType": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK",
+              "responseModel": "Pet"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "Pet"
         }
       ],
       "path": "/features/1490/{itemId}"
@@ -1292,6 +1292,45 @@
       "path": "/features/effectives"
     },
     {
+      "description": "getEnumAsObject",
+      "operations": [
+        {
+          "method": "GET",
+          "summary": "getEnumAsObject",
+          "nickname": "getEnumAsObjectUsingGET",
+          "produces": [
+            "*/*"
+          ],
+          "consumes": [
+            "application/json"
+          ],
+          "parameters": [],
+          "responseMessages": [
+            {
+              "code": 200,
+              "message": "OK",
+              "responseModel": "EnumObjectType"
+            },
+            {
+              "code": 401,
+              "message": "Unauthorized"
+            },
+            {
+              "code": 403,
+              "message": "Forbidden"
+            },
+            {
+              "code": 404,
+              "message": "Not Found"
+            }
+          ],
+          "deprecated": "false",
+          "type": "EnumObjectType"
+        }
+      ],
+      "path": "/features/enumObject"
+    },
+    {
       "description": "updateListOfExamples",
       "operations": [
         {
@@ -1779,7 +1818,7 @@
         {
           "method": "GET",
           "summary": "Find pet by ID",
-          "notes": "Returns a pet when ID < 10. ID > 10 or nonintegers will simulate API error conditions",
+          "notes": "Returns a pet when ID < 10. ID > 10 or non-integers will simulate API error conditions",
           "nickname": "getPetByIdUsingGET",
           "produces": [
             "*/*"
@@ -1828,6 +1867,20 @@
   "basePath": "/",
   "consumes": [],
   "models": {
+    "EnumObjectType": {
+      "description": "",
+      "id": "EnumObjectType",
+      "properties": {
+        "description": {
+          "required": false,
+          "type": "string"
+        },
+        "name": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    },
     "Pet": {
       "description": "",
       "id": "Pet",
