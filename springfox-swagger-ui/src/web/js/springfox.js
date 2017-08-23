@@ -89,7 +89,7 @@ $(function() {
 
             var security = _.map(method.security, function (permission) { //Grab all of the permissions and convert to a string.
 
-              return _.first(permission.OAuth2);
+              return _.first(permission.auth2_password_grant);
 
             }).join(',');
             
